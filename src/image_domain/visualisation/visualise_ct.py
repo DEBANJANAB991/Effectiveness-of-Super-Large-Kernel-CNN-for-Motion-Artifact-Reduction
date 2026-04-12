@@ -5,6 +5,7 @@ MPR comparison with:
 ✔ ROI detection
 ✔ Best slice selection
 ✔ Fair normalization
+for Image domain
 """
 
 import numpy as np
@@ -14,7 +15,7 @@ import sys
 from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from config import RECONSTRUCTED_CT_VOLUME
+from config.config import RECONSTRUCTED_CT_VOLUME
 
 CT_ROOT = Path(RECONSTRUCTED_CT_VOLUME)
 
