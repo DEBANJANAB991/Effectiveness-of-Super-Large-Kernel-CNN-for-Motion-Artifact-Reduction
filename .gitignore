@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+data/
+checkpoints/
+*.pth
+
+results/logs/
+*.out
+*.err
+
+scripts_backup/
+ExternalRepo_backup/
