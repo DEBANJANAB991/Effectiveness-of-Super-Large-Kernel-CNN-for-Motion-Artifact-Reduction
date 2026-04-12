@@ -4,8 +4,7 @@ __pycache__/
 .venv/
 
 data/
-checkpoints/
-*.pth
+
 
 results/logs/
 *.out
