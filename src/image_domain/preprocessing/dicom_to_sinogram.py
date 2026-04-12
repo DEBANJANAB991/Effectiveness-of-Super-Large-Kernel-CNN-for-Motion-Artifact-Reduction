@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Module: DICOM to Sinogram Conversion
+Module: DICOM to Sinogram Conversion for both Image and Projection Domain Tasks
 
 This script performs:
 - Loading CT volumes from DICOM series (CQ500 dataset)
