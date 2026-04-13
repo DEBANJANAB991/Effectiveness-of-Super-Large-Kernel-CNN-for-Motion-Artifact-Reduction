@@ -15,14 +15,8 @@ import sys
 import json
 import re
 
-ROOT = Path(__file__).resolve()
 
-# Go up until we find config folder
-for parent in ROOT.parents:
-    if (parent / "config").exists():
-        sys.path.insert(0, str(parent))
-        break
-from config import (
+from config.config import (
     PREDICTED_SINOGRAM_2D_TEST_v2,
     MERGED_SINOGRAM_3D_TEST_v2
 )
