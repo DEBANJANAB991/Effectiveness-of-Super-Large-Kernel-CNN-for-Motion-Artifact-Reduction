@@ -163,10 +163,10 @@ https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sha
 
 ### Usage
 
-Download the files and place them in checkpoints/ folder.
+Download the files and place them in `checkpoints/ folder`.
 
 
-Then update paths in src/config/config.py
+Then update paths in `src/config/config.py`
 
 ## HPC Usage
 
