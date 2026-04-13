@@ -147,9 +147,23 @@ python3 src/projection_domain/inference/run_inference.py
 
 Results are stored in the `results/` directory and include training curves, quantitative evaluation tables, visual comparisons, and ROI analysis.
 
-## Checkpoints
+## Pretrained Models
 
-Model weights are stored in `checkpoints/`. If not included in the repository, download them from:
+Pretrained model weights are available here.
+
+## Image Domain
+
+https://drive.google.com/drive/folders/1s54Kxz7kzvkK6pQEev2daEGw6yAZX7_X?usp=sharing
+
+## Projection Domain
+
+https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sharing
+
+
+
+### Usage
+
+Download the files and place them in:
 
 ## HPC Usage
 
