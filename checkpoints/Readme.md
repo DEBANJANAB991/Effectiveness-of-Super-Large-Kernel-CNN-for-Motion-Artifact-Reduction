@@ -6,7 +6,7 @@ Due to file size limitations, checkpoints are not included in this repository.
 
 ## Download
 
-👉 https://drive.google.com/your-link
+https://drive.google.com/drive/folders/1s54Kxz7kzvkK6pQEev2daEGw6yAZX7_X?usp=drive_link
 
 ## Instructions
 
