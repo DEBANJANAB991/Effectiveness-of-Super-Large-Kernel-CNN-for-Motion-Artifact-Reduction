@@ -41,7 +41,7 @@ from config.config import (
     ART_SINOGRAM_2D,
     CLEAN_SINOGRAM_2D_TEST,
     PREDICTED_SINOGRAM_2D_TEST_v2,
-    CKPT_DIR
+    CKPT_DIR_PROJECTION_DOMAIN as CKPT_DIR,
 )
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
