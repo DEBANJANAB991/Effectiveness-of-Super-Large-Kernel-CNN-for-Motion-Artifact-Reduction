@@ -9,9 +9,9 @@
 #SBATCH --partition=rtx3080       # Specify the GPU partition a100
 #SBATCH --time=24:00:00                 # Maximum runtime of 24 hours
 #SBATCH --export=NONE                   # Do not export current environment variables
-#SBATCH --job-name=testinggithub # Job name
-#SBATCH --output=results/logs2/testinggithub.out      # Standard output log file (%j expands to job ID)
-#SBATCH --error=results/logs2/testinggithub.err       # Standard error log file (%j expands to job ID)
+#SBATCH --job-name=testinggithub2 # Job name
+#SBATCH --output=results/logs2/testinggithub2.out      # Standard output log file (%j expands to job ID)
+#SBATCH --error=results/logs2/testinggithub2.err       # Standard error log file (%j expands to job ID)
 
 # ===============================
 # Environment Configuration#  
@@ -89,7 +89,7 @@ cd /home/hpc/iwi5/iwi5293h/Debanjana_Master_Thesis/src
 
 #training steps
 #python3 projection_domain/training/train.py --model unet --max-views-per-patient 100 --unet-base 32
-python3 projection_domain/training/train.py --model mr_lkv --norm batch --max-views-per-patient 100  --epoch 60
+#python3 projection_domain/training/train.py --model mr_lkv --norm batch --max-views-per-patient 100  --epoch 60
 #python3 projection_domain/training/train.py --patch 128 --model swinir --batch-size 2 --max-views-per-patient 100 
 #python3 projection_domain/training/train.py --model restormer  --batch-size 1 --max-views-per-patient 100  
 #python3 projection_domain/training/train.py --model replk --max-views-per-patient 100
@@ -102,7 +102,7 @@ python3 projection_domain/training/train.py --model mr_lkv --norm batch --max-vi
 #python3 projection_domain/inference/run_inference.py --model restormer
 
 #reconstruction steps
-#python3 projection_domain/preprocessing/merge_2D_to_3D.py
+#python3 projection_domain/preprocessing/merge_2D_to_3D.py mr_lkv
 #python3 projection_domain/reconstruction/fdk_reconstruction.py restormer
 #python3 projection_domain/reconstruction/fdk_reconstruction.py mr_lkv
 #python3 projection_domain/reconstruction/fdk_reconstruction.py replknet
@@ -121,8 +121,9 @@ python3 projection_domain/training/train.py --model mr_lkv --norm batch --max-vi
 
 #visualisation commands
 #python3 projection_domain/visualisation/visualise_ct.py
-#python3 projection_domain/visualisation/visualise_ct_mrlkv.py
+#python3 projection_domain/visualisation/visualise_mrlkv.py
 #python3 projection_domain/visualisation/metrics.py
+#python3 projection_domain/visualisation/visualise_sinograms.py
 
 
 
