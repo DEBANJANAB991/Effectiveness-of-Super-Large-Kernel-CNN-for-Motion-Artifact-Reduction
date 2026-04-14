@@ -1,0 +1,11 @@
+torch>=1.10
+torchvision>=0.11
+numpy>=1.21
+scipy
+matplotlib
+tqdm
+pydicom
+scikit-image
+opencv-python
+einops
+timm
