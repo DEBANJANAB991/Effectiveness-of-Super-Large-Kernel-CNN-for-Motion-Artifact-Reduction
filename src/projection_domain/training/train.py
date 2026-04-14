@@ -120,7 +120,7 @@ class Sinogram2DDataset(Dataset):
     Otherwise returns full-size sinogram (no cropping).
     """
     
-    def __init__(self, clean_root: Path, art_root: Path, max_views_per_patient: int = 300, patch_size: int = 0):
+    def __init__(self, clean_root: Path, art_root: Path, max_views_per_patient: int = 100, patch_size: int = 0):
         self.clean_root = Path(clean_root)
         self.art_root = Path(art_root)
         if not self.clean_root.exists():
