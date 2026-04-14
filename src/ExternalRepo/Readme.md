@@ -1,12 +1,17 @@
-This folder contains third-party repositories used as baselines.
+## 📦 External Dependencies
 
-- SwinIR: https://github.com/JingyunLiang/SwinIR
-- Restormer: https://github.com/swz30/Restormer
+The following repositories are included as Git submodules:
 
-The code is included without modification and is used only for baseline comparison.
+- DiffCT  
+  https://github.com/sypsyp97/diffct  
 
-### Setup
+- SwinIR  
+  https://github.com/JingyunLiang/SwinIR  
 
-git clone https://github.com/JingyunLiang/SwinIR
+- Restormer  
+  https://github.com/swz30/Restormer  
 
-git clone https://github.com/swz30/Restormer
+### Clone with submodules
+
+```bash
+git clone --recurse-submodules <repo-url>
