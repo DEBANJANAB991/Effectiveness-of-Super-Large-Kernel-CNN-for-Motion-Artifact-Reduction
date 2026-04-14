@@ -1,5 +1,10 @@
 # config.py 
+# =====================================
+# IMPORTANT: UPDATE PATHS BEFORE RUNNING
+# =====================================
 
+# These paths are specific to the HPC environment used during development.
+# Replace them with your local paths before running the code.
 from pathlib import Path
 
 # ------------------------------------------------------------------
