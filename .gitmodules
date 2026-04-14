@@ -1,3 +1,6 @@
 [submodule "src/ExternalRepo/SwinIR"]
 	path = src/ExternalRepo/SwinIR
 	url = https://github.com/JingyunLiang/SwinIR
+[submodule "src/ExternalRepo/Restormer"]
+	path = src/ExternalRepo/Restormer
+	url = https://github.com/swz30/Restormer
