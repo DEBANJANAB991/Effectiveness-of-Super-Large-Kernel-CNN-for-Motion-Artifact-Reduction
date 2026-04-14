@@ -4,3 +4,6 @@
 [submodule "src/ExternalRepo/Restormer"]
 	path = src/ExternalRepo/Restormer
 	url = https://github.com/swz30/Restormer
+[submodule "src/ExternalRepo/diffct"]
+	path = src/ExternalRepo/diffct
+	url = https://github.com/sypsyp97/diffct
