@@ -1,4 +1,4 @@
-## 📦 External Dependencies
+## External Dependencies
 
 The following repositories are included as Git submodules:
 
