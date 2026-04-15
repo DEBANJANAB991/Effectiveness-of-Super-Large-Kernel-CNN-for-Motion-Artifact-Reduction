@@ -30,18 +30,17 @@ rmse = [0.06183, 0.06268, 0.05828, 0.06156, 0.05843]
 mae  = [0.03315, 0.03613, 0.02887, 0.03133, 0.03366]
 
 # Computational Metrics
-flops = [54.82, 87.67, 229.62, 59.35, 26.76]
+flops = [109.63, 175.34, 456.94, 118.69, 53.51]
 time  = [7.52, 236.41, 117.82, 105.11, 28.66]
 params = [7.76, 0.33, 10.66, 2.73, 7.69]
 
-# IEEE grayscale palette (MR-LKV highlighted)
-#colors = ["#4d4d4d", "#7f7f7f", "#a6a6a6", "#595959", "#000000"]
+# IEEE grayscale palette 
 colors = [
-    "#1f77b4",  # U-Net (blue)
-    "#2ca02c",  # SwinIR (green)
-    "#d62728",  # Restormer (red)
-    "#9467bd",  # RepLKNet (purple)
-    "#2ca02c"   # MR-LKV (same green but will highlight separately)
+    "#1f77b4",  # U-Net 
+    "#2ca02c",  # SwinIR 
+    "#d62728",  # Restormer
+    "#9467bd",  # RepLKNet 
+    "#2ca02c"   # MR-LKV 
 ]
 
 # =========================
