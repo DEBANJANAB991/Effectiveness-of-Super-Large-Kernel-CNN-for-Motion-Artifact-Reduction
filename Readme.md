@@ -157,8 +157,8 @@ The table below provides quick access:
 
 | Task                     | Full Pipeline Instructions | Results |
 |--------------------------|---------------------|---------------------|
-| Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Open](evaluation/qualitative analysis/image_domain) |
-| Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md) |  [Open](evaluation/qualitative analysis/projection_domain) |
+| Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Open](evaluation/qualitative%20analysis/image_domain) |
+| Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md) |  [Open](evaluation/qualitative%20analysis/projection_domain) |
 | 
 ## Results
 
