@@ -4,7 +4,10 @@ __pycache__/
 .venv/
 
 data/
-
+*.pth
+*.npy
+logs/
+__pycache__/
 
 results/logs/
 *.out
@@ -12,3 +15,23 @@ results/logs/
 
 scripts_backup/
 ExternalRepo_backup/
+
+  Restormer/
+        SwinIR copy 2/
+        SwinIR copy/
+        SwinIR/
+        Training_Curves/
+        config.py
+        diffct/
+        results/
+        scripts/
+        src copy/
+        src/ExternalRepo/Restormer/
+        src/ExternalRepo/SwinIR/
+        src/ExternalRepo/diffct/
+        src/common/
+        src/results/
+        src/sinogram_visualizations_replknet/
+        src/sinogram_visualizations_restormer/
+        src/sinogram_visualizations_swinir/
+        src/sinogram_visualizations_unet/
