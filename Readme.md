@@ -184,7 +184,7 @@ The table below provides quick access:
 | RepLKNet    | 2.73             | 195.29      | 193.40                |
 | **MR-LKV (Proposed)** | 8.06             | **91.24**   | 60.21                |
 
-## 📊 Image Domain Results
+## Image Domain Results
 
 ### Quantitative Comparison
 
