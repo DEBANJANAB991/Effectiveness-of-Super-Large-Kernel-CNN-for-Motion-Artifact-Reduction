@@ -95,6 +95,9 @@ pip install -e .
 - Metrics: PSNR, SSIM
 - Visual comparison
 - ROI-based analysis
+  
+<p align="center">
+  <img src="assets/pipeline.jpg" width="800">
 
 ## Models
 
@@ -155,7 +158,7 @@ The table below provides quick access:
 | Task                     | Full Pipeline Instructions | Results |
 |--------------------------|---------------------|---------------------|
 | Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Download](https://drive.google.com/...) |
-| Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md)  [Download](https://drive.google.com/...) |
+| Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md) |  [Download](https://drive.google.com/...) |
 | 
 ## Results
 
