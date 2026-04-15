@@ -9,9 +9,9 @@
 #SBATCH --partition=rtx3080       # Specify the GPU partition a100
 #SBATCH --time=24:00:00                 # Maximum runtime of 24 hours
 #SBATCH --export=NONE                   # Do not export current environment variables
-#SBATCH --job-name=testinggithub2 # Job name
-#SBATCH --output=results/logs2/testinggithub2.out      # Standard output log file (%j expands to job ID)
-#SBATCH --error=results/logs2/testinggithub2.err       # Standard error log file (%j expands to job ID)
+#SBATCH --job-name=JOB_NAME # Job name
+#SBATCH --output=results/logs2/JOB_NAME.out      # Standard output log file (%j expands to job ID)
+#SBATCH --error=results/logs2/JOB_NAME.err       # Standard error log file (%j expands to job ID)
 
 # ===============================
 # Environment Configuration#  
@@ -34,7 +34,6 @@ conda activate /home/woody/iwi5/iwi5293h/software/private/conda/envs/thesis-gpu
 # ===============================
 # Navigate to Script Directory
 # ===============================
-#cd /home/hpc/iwi5/iwi5293h/Debanjana_Master_Thesis/scripts 
 cd /home/hpc/iwi5/iwi5293h/Debanjana_Master_Thesis/src
 
 
@@ -122,7 +121,7 @@ cd /home/hpc/iwi5/iwi5293h/Debanjana_Master_Thesis/src
 #visualisation commands
 #python3 projection_domain/visualisation/visualise_ct.py
 #python3 projection_domain/visualisation/visualise_mrlkv.py
-#python3 projection_domain/visualisation/metrics.py
+#python3 projection_domain/visualisation/metrics_plot.py
 #python3 projection_domain/visualisation/visualise_sinograms.py
 
 
