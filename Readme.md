@@ -162,9 +162,9 @@ The table below provides quick access:
 
 ## Quantitative and Computational Results
 
-## Projection Domain Results
+### Projection Domain Results
 
-### Quantitative Comparison
+#### Quantitative Comparison
 
 | Model        | PSNR ↑        | SSIM ↑        | VIF ↑         | RMSE ↓        | MAE ↓         | LPIPS ↓       |
 |-------------|--------------|--------------|--------------|--------------|--------------|--------------|
@@ -174,7 +174,7 @@ The table below provides quick access:
 | RepLKNet    | 35.33 ± 10.50 | 0.8786 ± 0.0525 | 0.3559 ± 0.1002 | 0.03829 ± 0.01443 | 0.01642 ± 0.01111 | 0.1405 ± 0.0654 |
 | **MR-LKV (Proposed)** | **37.94 ± 10.20** | **0.9024 ± 0.0474** | **0.3880 ± 0.1279** | **0.03097 ± 0.01193** | **0.01234 ± 0.00781** | **0.1027 ± 0.0515** |
 
-### Model Efficiency
+#### Model Efficiency
 
 | Model        | Parameters (M) ↓ | FLOPs (G) ↓ | Inference Time (ms) ↓ |
 |-------------|------------------|-------------|-----------------------|
@@ -184,9 +184,9 @@ The table below provides quick access:
 | RepLKNet    | 2.73             | 195.29      | 193.40                |
 | **MR-LKV (Proposed)** | **8.06**             | **91.24**   | **60.21**                |
 
-## Image Domain Results
+### Image Domain Results
 
-### Quantitative Comparison
+#### Quantitative Comparison
 
 | Model        | PSNR (dB) ↑     | SSIM ↑        | VIF ↑         | RMSE ↓        | MAE ↓         | LPIPS ↓       |
 |-------------|----------------|--------------|--------------|--------------|--------------|--------------|
@@ -196,7 +196,7 @@ The table below provides quick access:
 | RepLKNet    | 29.11 ± 7.10   | 0.9002 ± 0.0440 | 0.3222 ± 0.1136 | 0.06156 ± 0.01601 | 0.03133 ± 0.01038 | 0.1090 ± 0.0545 |
 | **MR-LKV (Proposed)** | **29.48 ± 6.99**   | **0.8904 ± 0.0556** | **0.3540 ± 0.1250** | **0.05843 ± 0.01546** | **0.03366 ± 0.01202** | **0.1063 ± 0.0568** |
 
-### Model Efficiency
+#### Model Efficiency
 
 | Model        | Parameters (M) ↓ | FLOPs (G) ↓ | Inference Time (ms) ↓ |
 |-------------|------------------|-------------|-----------------------|
