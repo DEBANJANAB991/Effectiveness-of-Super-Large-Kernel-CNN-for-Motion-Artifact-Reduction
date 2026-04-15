@@ -1,0 +1,71 @@
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+\section{Summary of Work}
+This thesis investigated the effectiveness of super-large-kernel CNN in motion artifact reduction in computed tomography (CT) imaging. Motion artifacts, arising from inconsistencies across projection views during data acquisition, are a major challenge due to their globally distributed nature and their impact on diagnostic image quality. Traditional convolutional neural networks (CNNs), which rely on small kernel sizes, often struggle to model such long-range dependencies efficiently, while transformer-based approaches, although effective, have high computational cost.
+
+To address this gap, a novel architecture, MR-LKV (Motion Restoration using Large Kernel Convolution), is proposed. The model leverages super-large depthwise convolutional kernels to capture global spatial dependencies, enabling effective modeling of globally distributed motion artifacts. The architecture is designed to maintain computational efficiency through depthwise separable convolutions and a lightweight encoder–decoder framework.
+A unified framework is developed, including DICOM preprocessing, sinogram generation via forward projection, motion artifact simulation, and training in both projection and image domains. In the projection domain, MR-LKV operates directly on sinogram data to correct motion-induced inconsistencies prior to reconstruction, while in the image domain, a simplified variant focuses on spatial refinement of reconstructed CT slices.
+
+
+The proposed approach is compared against multiple baseline architectures, including U-Net, RepLKNet, SwinIR, and Restormer, using quantitative, perceptual, and computational efficiency metrics, along with qualitative analysis. It is demonstrated by experimental results that MR-LKV achieves competitive reconstruction quality while maintaining significantly lower computational complexity compared to transformer-based architectures.
+
+ Overall, this work demonstrates that super-large-kernel convolutional architectures provide an effective and efficient solution for modeling global dependencies in CT artifact reduction, offering a practical alternative to both conventional CNNs and computationally intensive transformer-based models.  
+ 
+
+
+\section{Main Findings}
+
+The results of this work provide several important insights into the role of super-large kernel convolution for motion artifact reduction in CT imaging.
+
+ First, a clear distinction is observed between projection-domain and image-domain correction. In the projection domain, MR-LKV achieves the best quantitative performance, effectively restoring consistency in the sinogram and reducing reconstruction errors. However, the visual improvements in this domain may appear subtle, as small inconsistencies in projection space are amplified during reconstruction. In contrast, the image domain presents a more challenging setting where artifacts are already spatially distributed, resulting in slightly lower quantitative metrics. Despite this, image-domain results appear visually more refined, as the model directly optimizes perceptual quality, leading to smoother textures and improved anatomical coherence.
+
+ Second, the findings demonstrate that the architectural design of MR-LKV enables effective modeling of globally distributed artifacts. Compared to conventional CNN-based models such as U-Net and RepLKNet, MR-LKV consistently produces improved structural consistency and reduced artifact intensity. While transformer-based models such as Restormer achieve better perceptual metrics and finer detail recovery, they do so at the cost of significantly higher computational complexity 
+
+From a computational standpoint, MR-LKV achieves the lowest FLOPs among all tested models while maintaining moderate parameter count and considerably faster inference compared to transformer-based architectures. This balance between performance and efficiency highlights its potential for practical deployment in clinical settings. 
+
+Qualitative analysis further supports these findings, showing that MR-LKV effectively removes distributed motion artifacts globally while preserving fine anatomical details. In particular, ROI-based comparisons highlight improved edge sharpness and reduced streak artifacts compared to baseline models.
+
+Overall, the results validate super-large kernel convolution as an effective and efficient approach for motion artifact reduction in CT imaging.
+
+ 
+
+\section{Limitations}
+
+Despite its competitive performance, MR-LKV does not consistently outperform transformer-based models such as Restormer in all evaluation metrics, particularly in terms of structural similarity (SSIM) and perceptual similarity (LPIPS). This may be attributed to the fact that transformer-based architectures are inherently well-suited for modeling long-range dependencies through self-attention mechanisms. Additionally, while the model achieves a favorable trade-off between performance and efficiency, the use of large kernels still introduces moderate computational overhead compared to lightweight CNN architectures.
+
+
+Secondly, although the projection-domain approach achieves higher reconstruction accuracy, it requires raw sinogram data and has a very complex processing pipeline, which limits its usability in scenarios where only reconstructed images are available. Conversely, the image-domain approach, while more efficient and flexible, functions on already corrupted data, making complete artifact removal inherently more difficult. 
+
+
+Thirdly, the evaluation is conducted on synthetically generated motion artifacts, which may not fully represent the complexity of real-world patient motion. This may limit the generalizability of the observed results. Additionally, the study focuses primarily on single-modality CT data and does not consider multi-modal or multi-task learning scenarios, which could further enhance robustness and performance. 
+
+Finally, although MR-LKV achieves a favorable balance between performance and efficiency, there is still a trade-off between computational cost and reconstruction accuracy. Further optimization may be required for deployment in highly resource-constrained environments. 
+
+ 
+ 
+
+
+\section{Future Work}
+
+Future work should focus on evaluating the proposed approach on real clinical datasets containing naturally occurring motion artifacts to assess practical applicability.
+
+
+Extending the framework to three-dimensional processing could further improve volumetric consistency by capturing inter-slice dependencies. Future work could explore hybrid architectures that combine super-large kernel convolution with more expressive attention mechanisms. Integrating adaptive self-attention with large receptive fields may further improve the modeling of complex and spatially varying motion artifacts, while maintaining computational efficiency.
+
+Further optimization of baseline architectures under comparable computational settings would enable more comprehensive benchmarking. Finally, exploring model compression, pruning, and hardware-specific optimization could facilitate real-time deployment in clinical environments.
+
+In addition, integrating projection-domain and image-domain correction within a unified end-to-end framework could leverage the strengths of both approaches, enabling more robust artifact reduction across the entire reconstruction pipeline.
+
+
+Overall, this work demonstrates that super-large kernel convolution provides a robust and computationally efficient framework for modeling global motion artifacts, offering a promising direction for future research in CT image restoration.
+
+
+ 
+
+ 
+
+ 
+
+
+ 

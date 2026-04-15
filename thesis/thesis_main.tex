@@ -1,0 +1,197 @@
+% Document class for LME theses: lmedoc
+% %LANGUAGE
+% %CONFIG
+%    The option "german" uses german.sty
+%    For english papers, use the "english" option
+% Possible types of theses:
+% bt - Bachelor's thesis
+% mt - Master's thesis
+% diss - Dissertation
+% sa - Student thesis
+% fp - Forschungspraktikum
+% pa - Projektarbeit
+%\documentclass[german,bt]{lmedoc/lmedoc}
+\documentclass[english,mt]{lmedoc/lmedoc}
+
+
+%%%%%%%%%%%%%%%%%%
+% pdflatex and lualatex are supported
+% ++ "Umlaut" support
+%    The package "inputenc" can be used to write Umlaute or the german double s
+%    directly. You need to use the correct encoding, e.g. latin1.
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{graphicx} % REQUIRED for resizebox
+\usepackage{titlesec}
+\usepackage[table]{xcolor}
+\usepackage{siunitx}
+\usepackage{placeins}
+\usepackage{longtable}
+\titlespacing*{\section}{0pt}{0pt}{0.5em}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{float}
+  \usepackage[font=small,labelfont=bf]{caption}
+  \usepackage{lmodern}
+  \setlength{\parskip}{3pt}
+\else
+  \ifXeTeX
+     \usepackage{fontspec}
+  \else 
+     \usepackage{luatextra}
+  \fi
+\fi
+
+%Load additional packages
+\usepackage{lmedoc/packages}
+
+
+% put in this file your abbreviations
+\input{abbreviations.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% supress messages because of underful hbox, this is not a problem
+\hbadness=10000
+
+
+
+% some useful commands
+\makeatletter % let's define a single dot
+\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+\newcommand{\@onedot}{\ifx\@let@token.\else.\null\fi\xspace}
+\makeatother
+
+% Sets the bib file
+
+\addbibresource{literature.bib}
+
+% When writing a large document, it is sometimes useful to work on selected sections of the document.
+% Use this command to only build the document partially. Speeds up the development cycle.
+% For the final product, this has to be commented out.
+%\includeonly{introduction, appendix, foo, bar}
+
+
+\pagenumbering{roman}
+
+\begin{document}
+\clearpage
+% %CONFIG
+% This is for students' theses
+  \begin{deckblatt}
+    \Titel{Large Kernel Convolution for CT Image Restoration} % Title
+    \Name{Bhattacharjya} % Last name
+    \Vorname{Debanjona} % Given name
+    \Geburtsort{Siliguri, India} % Place of birth
+    \Geburtsdatum{16.11.1998} % Date of birth
+    \Betreuer{Yipeng Sun, Prof Dr. Ing Andreas Maier} % Advisor
+    \Start{17.10.2025} % Start of thesis
+    \Ende{16.04.2026} % End of thesis
+    %\ZweitInstitut{ZweitInstitut} % Cooperation partner
+  \end{deckblatt}
+
+
+\cleardoublepage
+% Only necessary for thesis
+
+Ich versichere, dass ich die Arbeit ohne fremde Hilfe und ohne Benutzung
+anderer als der angegebenen Quellen angefertigt habe und dass die Arbeit
+in gleicher oder "ahnlicher Form noch keiner anderen Pr"ufungsbeh"orde
+vorgelegen hat und von dieser als Teil einer Pr"ufungsleistung
+angenommen wurde. Alle Ausf"uhrungen, die w"ortlich oder sinngem"a"s
+"ubernommen wurden, sind als solche gekennzeichnet.
+\\
+
+
+\cleardoublepage
+
+
+\begin{center}
+\bfseries
+% Abstract in German
+{\selectlanguage{english}"Ubersicht}
+\normalfont
+\end{center}
+
+
+\vspace{5.0cm}
+
+\begin{center}
+\bfseries
+% Abstract in English
+{\selectlanguage{english}Abstract}
+\normalfont
+\end{center}
+\vspace{1cm}
+Motion artifacts in computed tomography (CT) significantly compromise image quality and can adversely affect diagnostic accuracy. These artifacts arise from inconsistencies in projection data caused by patient motion and often exhibit complex global structures that are challenging to correct using conventional convolutional neural networks (CNNs) with limited receptive fields. This thesis introduces a deep learning framework based on a super‑large-kernel convolutional network (MR‑LKV) designed to effectively reduce motion artifacts. The model employs super-large-kernel convolutions to efficiently capture long-range spatial dependencies, enabling effective modeling of globally distributed inconsistencies. The framework is examined in both the projection domain and the image domain: in the projection domain, the model restores corrupted sinograms by correcting view‑wise inconsistencies, while in the image domain, it refines reconstructed CT volumes affected by motion. Experimental evaluations demonstrate that MR‑LKV achieves strong performance across both domains. In the projection domain, the model effectively mitigates the source of motion artifacts, resulting in superior reconstruction quality. In the image domain, it attains competitive visual results relative to CNN‑ and transformer‑based baselines while maintaining substantially lower computational cost and faster inference. Overall, the findings indicate the effectiveness of large‑kernel CNNs as a powerful and efficient approach for modeling global spatial dependencies in CT reconstruction, offering a practical and scalable solution for motion artifact correction.
+
+ 
+
+ 
+\clearpage
+\begin{center}
+\bfseries
+% Abstract im Deutsch
+{\selectlanguage{english}Zusammenfassung}
+\normalfont
+\end{center}
+\vspace{1cm}
+Bewegungsartefakte in der Computertomographie (CT) beeinträchtigen die Bildqualität erheblich und können die diagnostische Genauigkeit negativ beeinflussen. Diese Artefakte entstehen durch Inkonsistenzen in den Projektdaten infolge von Patientenbewegungen und weisen häufig komplexe globale Strukturen auf, die mit konventionellen Convolutional Neural Networks (CNNs) mit begrenztem Rezeptionsfeld nur schwer korrigiert werden können. Diese Arbeit stellt ein Deep-Learning-Framework basierend auf einem Convolutional Neural Network mit sehr großen Faltungsfiltern (MR-LKV) vor, das speziell zur Reduktion von Bewegungsartefakten entwickelt wurde. Das Modell nutzt supergroße Faltungskerne, um langfristige räumliche Abhängigkeiten effizient zu erfassen und somit global verteilte Inkonsistenzen wirksam zu modellieren. Der Ansatz wird sowohl im Projektions- als auch im Bildraum untersucht: Im Projektionsraum rekonstruiert das Modell gestörte Sinogramme durch die Korrektur von Inkonsistenzen zwischen einzelnen Projektionen, während es im Bildraum rekonstruierte CT-Volumina mit Bewegungsartefakten direkt verbessert. Experimentelle Ergebnisse zeigen, dass MR-LKV in beiden Domänen eine starke Leistung erzielt. Im Projektionsraum werden die zugrunde liegenden Ursachen der Bewegungsartefakte effektiv reduziert, was zu einer deutlich verbesserten Rekonstruktionsqualität führt. Im Bildraum erreicht das Modell wettbewerbsfähige visuelle Ergebnisse im Vergleich zu CNN- und transformerbasierten Ansätzen, bei gleichzeitig deutlich geringerer Rechenkomplexität und kürzeren Inferenzzeiten. Insgesamt zeigen die Ergebnisse, dass großkernige CNN-Architekturen einen effektiven und effizienten Ansatz zur Modellierung globaler räumlicher Abhängigkeiten in der CT-Rekonstruktion darstellen und somit eine praktische und skalierbare Lösung zur Reduktion von Bewegungsartefakten bieten.
+
+ 
+\cleardoublepage
+
+\tableofcontents
+
+\cleardoublepage \pagenumbering{arabic}
+
+\include{introduction}   % Introduction 
+\cleardoublepage
+\include{background}   % (\chapter{})
+\cleardoublepage
+\include{relatedwork} % (\chapter{})
+\cleardoublepage
+\include{models}
+\cleardoublepage
+\include{methodology}   % (\chapter{})
+\cleardoublepage
+\include{evaluation} % (\chapter{})
+%% ... more chapters ....
+\include{conclusion}    % (\chapter{})
+%\cleardoublepage
+
+\appendix
+\cleardoublepage
+\include{appendix}   % appendix A
+\cleardoublepage
+%\include{thesis10}   % appendix B
+%\cleardoublepage
+%\include{thesis11}   % appendix C
+%\cleardoublepage
+
+%% Do not change, auto-generated lists of figures, tables and literature %%
+% Glossar
+\printunsrtglossary[type=abbreviations]
+\cleardoublepage
+
+% List of figures
+\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+\cleardoublepage
+
+% List of tables
+\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+\cleardoublepage
+\input{notations}
+
+% Literature list
+% %CONFIG:
+%\selectlanguage{german}{\addcontentsline{toc}{chapter}{\bibname}}
+\selectlanguage{english}{\addcontentsline{toc}{chapter}{\bibname}}
+
+\printbibliography
+\end{document}
+
+

@@ -1,0 +1,380 @@
+\chapter{Methodology}
+\label{chap:methodology}
+\section{ Overview of the Proposed Approach} 
+
+
+The goal of this work is to reduce motion artifacts in reconstructed CT images using a dual pipeline framework (image-domain and projection-domain). The overall methodology consists of three common stages followed by the two domain-specific restoration pipelines. The backbone is a CNN that incorporates super‑large-kernels convolution so that individual layers can capture the long‑range spatial patterns that are characteristic of motion artifacts. 
+
+First, clean 3D CT volumes are converted into projection data (sinograms) using forward projection \cite{diffct2025}. Motion artifacts are then introduced directly in the projection-domain to simulate realistic acquisition inconsistencies. These corrupted sinograms serve as the basis for both restoration pipelines.
+Following artifact simulation, two complementary restoration strategies are explored.  
+In the \textbf{projection-domain} pipeline, models are trained to directly correct motion-corrupted sinograms before reconstruction (after converting them to 2D sinograms), whereas, in the \textbf{image-domain }pipeline, both clean and corrupted sinograms are first reconstructed into CT images using cone-beam filtered backprojection \cite{diffct2025}, and restoration is performed directly in the image-domain.
+
+\paragraph{Problem Formulation}
+Let $y$ denote a clean reference and $x $ its motion-corrupted counterpart. 
+The objective of the proposed method is to learn a parametric mapping:
+
+\begin{equation}
+\hat{y} = f_\theta(x)
+\end{equation}
+
+where $f_\theta$ represents the MR-LKV network with parameters $\theta$, and $\hat{y}$ denotes the restored output. 
+In this work, the formulation is applied in both projection- and image-domains, enabling the model to learn either sinogram-to-sinogram or image-to-image mappings depending on the pipeline.
+
+
+An overview of the proposed framework is illustrated in Fig. \ref{fig:pipeline}, highlighting the shared preprocessing stages and the divergence into projection-domain and image-domain learning frameworks. 
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{pipeline.pdf}
+    \caption{Pipeline of the proposed MR-LKV framework showing 3D sinogram generation, motion artifact simulation, domain-specific 2D training and inference, reconstruction, and volumetric evaluation. }
+    \label{fig:pipeline}
+\end{figure}
+
+
+ \section{Dataset and Preprocessing}
+ \subsection{Dataset Description}
+The experiments in this thesis are conducted using CT data from the \textbf{CQ500} dataset \cite{CQ500}, consisting of \textbf{491} non-contrast head CT scans acquired under clinical conditions.
+
+From this dataset, an initial subset of 100 patients is selected. For each patient, the relevant CT series is identified by scanning all subdirectories within the patient folder and selecting only those whose names match a predefined set of valid series descriptors: specifically, \texttt{ct plain}, \texttt{ct plain thin}, or \texttt{ct thin plain} (after normalizing underscores, hyphens, and whitespace to lowercase). 
+Any series containing fewer than 20 DICOM files is excluded. When multiple valid series exist for a single patient, the one with the largest number of slices is selected. After applying this criteria, \textbf{53 patients} are retained for further processing, with one CT series selected per patient.
+These 53 patients are used exclusively for model training and validation. A separate, non-overlapping set of 30 patients from the remaining CQ500 data is set for final evaluation. 
+
+
+For each selected series, Digital Imaging and Communications in Medicine (DICOM) slices are loaded and sorted according to their \textbf{InstanceNumber} to ensure correct anatomical ordering. The slices are then stacked into 3D volumetric arrays of shape $(Z, Y, X)$, where $Z$ denotes the number of slices (axial dimension) and $(Y, X)$ represents the in-plane spatial dimensions (height and width).
+
+\subsection{DICOM Volume Normalization}
+The CT volumes are loaded directly from DICOM files using raw pixel intensity values without applying rescale slope and intercept to convert them into Hounsfield Units (HU). Since the proposed method operates on normalized data and focuses on learning relative intensity patterns for artifact reduction, absolute HU calibration is not required. However, this assumption may affect generalizability, as raw pixel intensities can vary across scanners and acquisition protocols. 
+To maintain numerical stability and consistent scaling across samples, each 3D volume is independently normalized in the range $[0,1]$ using min–max normalization defined as:
+
+\begin{equation}
+x_{\mathrm{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+\end{equation}
+where $x_{min}$ and $x_{max}$ denote the minimum and maximum voxel intensities within each volume.
+
+\subsection{Conversion from DICOM to Sinogram}
+
+Since motion corruptions occur in the projection-domain, reconstructed CT images in DICOM format are first converted into sinogram data. For this purpose, a cone‑beam forward projection operator from the Differentiable CT (\textbf{DiffCT}) library is used \cite{diffct2025} on a 3D cone-beam configuration, producing volumetric sinograms that preserve spatial consistency across slices. 
+    
+In this work, the DiffCT implementation is used as a preprocessing tool without modifying its internal representation. However, key geometric and detector-related parameters, such as detector pixel spacing ($du, dv$), source-to-isocenter distance (SID), and source-to-detector distance (SDD), are adjusted to match the spatial resolution and field of view of the input CT images. The voxel spacing for the forward projection is extracted from the DICOM metadata. The in-plane pixel spacing is read from the \texttt{PixelSpacing} attribute, and the slice thickness is obtained from the \texttt{SliceThickness} attribute (defaulting to the minimum of the in-plane spacings if unavailable). To simplify the projection geometry, a single scalar voxel spacing is defined as the minimum of these values and used uniformly during forward projection. The projection geometry parameters are listed in Table \ref{tab:projection_geometry}. 
+
+The projection geometry includes a fixed number of 540 projection views uniformly distributed over a full angular range. Each projection is computed on GPU using the differentiable cone-beam forward projector as described above, producing 3D sinograms of shape $(N\_{views}, U, V)$, where $U$ and $V$denote the horizontal and vertical detector dimensions, respectively. For each patient, the resulting clean 3D sinogram and a corresponding visualization are saved for subsequent processing. 
+
+
+\begin{table}[htbp]
+\centering
+\caption{Cone-beam projection geometry parameters used for sinogram generation.}
+\label{tab:projection_geometry}
+\begin{tabular}{lc}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Detector resolution & $800 \times 800$ \\
+Detector pixel spacing ($du, dv$) & $1.0$ \\
+Source-to-isocenter distance (SID) & $530$ \\
+Source-to-detector distance (SDD) & $1095$ \\
+Number of projection views & $540$ \\
+Angular coverage & $360^\circ$ \\
+\hline
+\end{tabular}
+\end{table}
+
+This preprocessing pipeline is summarized in Fig. \ref{fig:dicom_to_sinogram}. 
+
+\begin{figure}[htpb]
+    \centering
+   
+        \includegraphics[width=1.0\linewidth]{dicom_to_sino.pdf}
+       \caption{Overview of the preprocessing pipeline from DICOM volume to 3D Sinogram.}
+        \label{fig:dicom_to_sinogram}
+    \end{figure}
+   
+
+\section{Motion Artifact Simulation in 3D Sinogram}
+
+Motion artifacts in CT occur when projections acquired at different time points no longer correspond to the same object position during image acquisition \cite{wagner2003quantification}. In this work, motion artifacts are simulated by applying geometric transformations directly to the clean 3D sinograms produced in Section~5.2.3, generating a corresponding set of motion-corrupted 3D sinograms \cite{thies2025_cbctmotion}. 
+Let
+\begin{equation}
+S \in \mathbb{R}^{N\_{views} \times U \times V}
+\end{equation}
+denote an artifact-free 3D sinogram, where $N\_{views}$ is the number of projection views, $U$ is the number of horizontal detector positions, and $V$ is the number of vertical detector rows. The motion-corrupted sinogram $S'$ is generated by applying a sequence of view-dependent geometric transformations to a copy of the original sinogram \cite{thies2025_cbctmotion}.
+
+\paragraph{Motion Event Modeling.}
+Patient motion is modeled as a small number of discrete inter-projection events, each representing a sudden positional change after which the object remains in its new configuration for all subsequent views \cite{thies2025_cbctmotion}. For each sinogram, the number of motion events  $N_e \in \{1, 2\}$ is randomly sampled. The onset position of each event is drawn uniformly from the range $[100,\, N\_{views}-100]$ to avoid boundary effects at the start and end of the acquisition. To simulate realistic motion trajectories, motion parameters are applied cumulatively across consecutive projections, resulting in temporally consistent motion patterns. 
+\begin{itemize}
+\item \textbf{In-plane rotation:} A rotation angle $\alpha_i \sim \mathcal{U}(-5^\circ, +5^\circ)$ is applied to all projections from the event onset onward \cite{thies2025_cbctmotion}. The rotation operates in the $(U, V)$ detector plane using cubic interpolation with constant zero-padding, preserving the original detector dimensions.
+
+\item \textbf{Horizontal translation:} A shift $\Delta u_i \sim \mathcal{U}(-15, +15)$ pixels along the detector $U$-axis is applied starting 5 to 19 views after the rotation onset \cite{thies2025_cbctmotion}. This delay reflects the observation that rotational and translational components of real patient motion do not typically begin simultaneously. The shift is implemented via coordinate remapping with cubic interpolation and constant zero-padding \cite{Gonzalez2008}.
+\end{itemize}
+All rotations are applied first, followed by all translations. Since each transformation is applied from its event onset to all subsequent views, the effects accumulate across events, resulting in progressively increasing distortions. The use of constant zero-padding at detector boundaries introduces edge discontinuities in the transformed projections, which contribute to more pronounced and realistic artifacts in the reconstructed images \cite{wagner2003quantification}.
+The ranges of translation and rotation are chosen to simulate realistic patient head motion observed during CT acquisition. 
+
+The output sinogram is stored in 32-bit floating-point precision. The artifact generation supports incremental processing: sinograms for which an artifact file already exists are automatically skipped, and non-three-dimensional inputs are excluded.
+The motion simulation parameters are summarized in Table \ref{tab:motion_parameters}. 
+
+\begin{table}[H]
+\centering
+\caption{Motion simulation parameters for artifact generation}
+\label{tab:motion_parameters}
+\begin{tabular}{p{5cm} p{9cm}}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Motion type & Inter-projection rotation and translation \\
+Number of motion events & 1--2 (randomly sampled) \\
+Event onset range & $[100,\, N\_{views}-100]$\\
+Rotation angle range &  $[-5^\circ, +5^\circ]$\\
+Translation range & $\pm 15$ pixels (detector $U$ axis)\\
+Translation delay & 5--19 views after rotation onset \\
+Interpolation method & Cubic B-spline (order 3)\\
+Boundary handling & Constant padding (value 0) \\
+Application domain & 3D sinogram domain (per-view transformation) \\
+Persistence & Each event affects all subsequent views \\
+Output precision & 32-bit floating point \\
+Motion severity & Moderate 1–2 motion events with bounded rotation and translation ranges\\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Discussion.}
+Since motion artifacts are introduced in the projection-domain, the resulting inconsistencies propagate through the reconstruction process and manifest as structured artifacts such as streaking and blurring in the image-domain. This ensures that both pipelines operate on physically consistent artifact patterns. While more advanced models could incorporate non-rigid deformations or continuous trajectories, the current approach provides an effective and computationally efficient approximation suitable for generating training data. 
+
+
+\section{Projection-Domain-Specific Data Processing }
+\subsection{Conversion of 3D Sinograms to 2D Representation  }
+Following motion artifact simulation, both clean and motion-corrupted sinograms are represented as 3D arrays of shape  $(N\_{views}, U, V)$, where $N\_{views}$  denotes the number of projection views, and $(U, V)$ represent the detector dimensions.
+
+To enable efficient training, the 3D sinograms are decomposed into 2D slices along the detector row dimension.  Since there are 53 patients, a total of $53 \times  detector\_v$ = $53 \times 800$ = 42,400 2D slices are obtained for clean and motion-corrupted data. 
+
+This slicing procedure is applied consistently to both clean and motion-corrupted sinograms, ensuring spatial alignment and forming paired training samples for supervised learning.
+
+To further improve data quality, optional filtering is applied to exclude slices with negligible signal content. In particular, slices with mean intensity below a predefined threshold (\textbf{$\textbf{0.01}$}) are discarded. For the dataset considered, this results in approximately  16,902 slices after filtering.
+
+\subsection{Sampling, Normalization, and Dataset Splitting}
+\paragraph{Sampling}
+To control dataset size and ensure computational efficiency, a maximum number of projection views per patient is specified as a configurable parameter.  When the number of available views exceeds this limit, a \textbf{random sampling strategy} is applied to select a subset of views. This introduces variability in the training data while maintaining a manageable number of samples per patient. In the experiments conducted in this work, the maximum number of views per patient is capped at \textbf{100} by command-line argument. 
+\paragraph{Splitting}
+Following dataset construction and per-patient view sampling, the data is split at the \textbf{patient level} into training (80\%), validation (10\%), and test (10\%) subsets. Patient identifiers are extracted from filenames, and patients are randomly shuffled before being assigned to each subset. All projection views corresponding to a given patient are exclusively assigned to a single subset, ensuring no data leakage across splits. In this work, the dataset is divided into \textbf{42 patients for training, 5 for validation, and 6 for testing},resulting in around 4100 training sinogram slices, depending on the number of available views per patient after sampling. 
+\paragraph{Normalization}
+
+During data loading, each sinogram is normalized independently using the intensity statistics of the artifact-corrupted input on a per-sample basis. Specifically, min–max normalization is applied using the minimum and maximum values of the corrupted sinogram, and the same scaling is applied to the corresponding clean target. This ensures a consistent intensity range across inputs and targets while preserving relative structural variations.
+
+ 
+
+\section{Image-Domain-Specific Data Processing}
+\subsection{Reconstruction to Image space}
+Following motion artifact simulation which results in 3D sinogram pairs, reconstruction is performed using a filtered backprojection pipeline (FDK) \cite{feldkamp1984practical}, where frequency-domain filtering is applied prior to backprojection. \cite{diffct2025}. The reconstruction process has three main stages: geometric weighting, frequency-domain filtering, and backprojection. 
+
+Prior to filtering, the projection data is weighted to account for cone-beam geometry. The weighting is computed based on detector coordinates and system geometry, where each detector element is scaled according to its distance from the X-ray source. Specifically, a distance-dependent weighting factor is applied to compensate for beam divergence, ensuring that rays farther from the central axis contribute appropriately during reconstruction. Next, a ramp filter combined with a Hann window is applied in the frequency domain to enhance high-frequency components while reducing noise. Finally, the filtered projections are backprojected across all acquisition angles to reconstruct the volumetric image. The same acquisition geometry used during forward projection is employed during reconstruction to ensure consistency between simulated projections and reconstructed volumes. 
+
+Following reconstruction, the resulting CT volumes are normalized to ensure consistent intensity scaling across samples. Specifically, intensity values are clipped between the 1st and 99th percentiles to reduce the influence of extreme outliers, and subsequently rescaled to the range [0, 1]. 
+
+
+\subsection{3D CT Volumes to 2D CT Slice Representation}
+
+To enable efficient training, the reconstructed volumes are decomposed into axial 2D slices, where each slice is treated as an independent training sample. Two-dimensional slices are extracted along the axial direction of the reconstructed volume, corresponding to the depth axis of the 3D data. This slicing strategy aligns with standard clinical CT viewing planes and preserves consistent anatomical structures across slices, enabling the model to learn spatially meaningful artifact patterns. 
+
+Additionally, slices with low structural information ($<0.01$) are excluded based on intensity variance, ensuring that the model focuses on informative anatomical regions. This gives a pairing of 10,000 clean-corrupted CT slices. 
+
+\subsection{Slice Sampling, Normalization, and Dataset Splitting }
+\paragraph{Sampling}
+Following slice filtering, a controlled sampling strategy is applied to ensure balanced representation across patients. For each CT volume, a maximum of \textbf{140 slices per patient} is retained. When the number of valid slices exceeds this limit, a \textbf{uniform sampling strategy} is employed, selecting slices at regular intervals across the volume. The selected slices from all patients are then aggregated to form the complete dataset.
+\paragraph{Splitting}
+After sampling, all selected slices are aggregated and subsequently split at the \textbf{patient level} into training (80\%), validation (10\%), and test (10\%) subsets.  All slices from a given patient are assigned exclusively to one subset to prevent data leakage.  In this work, the dataset is divided into \textbf{42 patients for training, 5 for validation, and 6 for testing}, resulting in  approximately \textbf{5300 training slices}, with validation and test samples derived from their respective patient groups.
+\paragraph{Normalization}
+During data loading, each slice is normalized independently using the intensity statistics of the artifact-corrupted input. Min–max normalization is applied using the minimum and maximum values of the corrupted slice, and the same scaling is applied to the corresponding clean target. This normalization is performed on-the-fly during data retrieval, ensuring consistency across training, validation, and testing phases.
+
+\begin{equation}
+\begin{aligned}
+S'_{\mathrm{norm}} &= \frac{S' - \min(S')}{\max(S') - \min(S') + \epsilon}, \\
+S_{\mathrm{norm}}  &= \frac{S - \min(S')}{\max(S') - \min(S') + \epsilon}
+\end{aligned}
+\end{equation}
+
+where $\epsilon$ is a small constant for numerical stability. This consistent normalization ensures that both input and target share the same intensity scale. Here $\epsilon$ is $1 \times 10^{-12}$. This normalization is applied independently of the initial preprocessing normalization and is specifically designed to stabilize reconstructed image intensities for learning. 
+
+\section{Training Strategy}
+
+Both projection-domain and image-domain pipelines are trained using supervised learning with paired data. In the projection-domain setting, models learn a mapping from motion-corrupted sinograms to clean sinograms, whereas in the image-domain setting, models learn a mapping from artifact-corrupted reconstructed image slices to clean reconstructed image slices.
+
+ \subsection{Unified Training Framework  }
+ A unified training framework is adopted to enable a controlled comparison between projection-domain and image-domain restoration strategies. All models, including U-Net, MR-LKV, SwinIR, Restormer, and RepLKNet, are trained independently in both domains using identical optimization settings and training procedures.
+
+The key difference lies only in the data representation: projection-domain models operate on sinogram slices, while image-domain models operate on reconstructed CT slices. 
+
+
+\subsection{Training Configuration}
+
+
+All models are trained using the Adam optimizer with weight decay of $ 10^{-5}$. The learning rate is initialized based on the model type and dynamically adjusted using a \textbf{ReduceLROnPlateau } scheduler based on validation loss, with a reduction factor of 0.5 and a patience of 5 epochs.
+
+The optimization objective is the L1 loss between the predicted and ground-truth outputs. In the projection-domain, this corresponds to sinogram slices, while in the image-domain, it corresponds to reconstructed CT image slices, as defined in Chapter \ref{chap:theoretical_background}. 
+
+
+
+
+\subsection{Training Procedure and Stability Measures}
+The training procedure remains consistent across both domains, with models trained using paired input-target samples 
+
+To improve training stability, gradient clipping with a maximum norm in the range of $0.2 - 0.5$ is applied. Early stopping with a patience of 10 epochs is used to prevent overfitting. If required, model outputs are resized using bilinear interpolation to match ground truth dimensions before loss computation. 
+Due to architectural constraints, input dimensions are adjusted for certain models. In particular, transformer-based models and large-kernel networks require input sizes divisible by specific factors, and inputs are cropped accordingly during training. Model performance is evaluated using Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM) on the validation and test sets. 
+
+Despite the similarity in training procedure, the learning objectives differ fundamentally: projection-domain training focuses on correcting measurement inconsistencies, whereas image-domain training focuses on suppressing visually observable artifacts after reconstruction. 
+
+\subsection{Validation and Model Selection}
+
+After each epoch, the model is evaluated on the validation set. In addition to the loss, image quality metrics, including Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM) are computed to verify performance.
+
+ The model achieving the lowest validation loss is saved as the best-performing model. Early stopping is employed to terminate training if no improvement in validation loss is observed for a fixed number of epochs, thereby preventing overfitting.
+
+ \subsection{Testing and  Evaluation}
+
+After training, the best model is evaluated on the unseen test set. Quantitative evaluation is performed using L1 loss, PSNR, and SSIM, providing a comprehensive assessment of both pixel-wise accuracy and structural fidelity. This evaluation is performed only after training to provide an unbiased assessment of model performance. 
+
+ \subsection{Implementation Details}
+
+All experiments are implemented using PyTorch and executed on a high-performance computing (HPC) cluster equipped with NVIDIA Tesla V100 GPUs with 32 GB memory. Data loading is performed using parallel workers to improve efficiency. Checkpoints are periodically saved to enable training resumption and reproducibility.  Model checkpoints, training logs, and validation curves are automatically saved during training to enable experiment tracking and result verification. 
+To ensure reproducibility of the experiments, random seeds were fixed for all major libraries used in the training pipeline. Specifically, deterministic seeds were set for PyTorch, NumPy, and Python’s built-in random module. These settings control dataset shuffling, parameter initialization, and projection view sampling, ensuring reproducible results under identical configurations. 
+
+Overall, the training strategy is designed to systematically evaluate the effectiveness of projection-domain and image-domain learning under controlled conditions. By training multiple architectures across both domains with consistent configurations, this work provides a comprehensive comparison of how domain choice influences motion artifact correction performance.
+
+A summary of all training hyperparameters is provided in Table \ref{tab:training_params}. 
+
+\begin{table}[H]
+\centering
+\caption{Training hyperparameters used for network optimization}
+\label{tab:training_params}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{5cm} p{9cm}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Optimizer & Adam \\
+Learning rate & $2.5 \times 10^{-5}$ (MR-LKV, U-Net), $2 \times 10^{-5}$ (SwinIR, Restormer), $1 \times 10^{-5}$ (RepLKNet)\\
+Batch size & 8 (MR-LKV, U-Net, RepLKNet), 2 (SwinIR), 1 (Restormer)\\
+Epochs & 100 \\
+Weight decay & $1 \times 10^{-5}$ \\
+Scheduler & ReduceLROnPlateau\\
+LR reduction factor & 0.5 \\
+Scheduler patience & 5 epochs \\
+Minimum learning rate & $1 \times 10^{-6}$ \\
+Early stopping patience & 10 epochs \\
+Max views per patient & 100 (per patient)\\
+Patch size & Full resolution (MR-LKV, U-Net, RepLKNet); resized/cropped inputs (e.g., $128 \times 128$) for transformer-based models (SwinIR, Restormer)\\
+Loss function & L1 loss \\
+Gradient clipping & 0.2 - 0.5 (depending on domain)\\
+Normalization & Min--max (artifact-based, per-sample)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\section{Inference Pipeline}
+
+\subsection{Projection-Domain Inference Pipeline}
+\subsubsection{Dataset Preparation}
+After training, the trained models are evaluated on unseen patient data. A separate test dataset consisting of 30 patients is processed using the same preprocessing pipeline as the training data, including DICOM-to-sinogram conversion and motion artifact simulation. 
+
+The resulting 3D sinograms are converted into two-dimensional slices in the same manner as the training procedure. However, unlike the training pipeline, no slice filtering is applied at test time to preserve all projection information required for accurate volumetric reconstruction. As a result, a total of $30 \times 800$ = 24000 2D motion-corrupted sinogram slices are prepared.
+
+\subsubsection{Generating Predicted 2D Sinogram}
+Each 2D motion-corrupted sinogram of shape $(N\_{views}, U)$ is then passed through the trained network to obtain the corresponding restored sinogram. During inference, the input slices are normalized using the minimum and maximum values of the corrupted input slice. To satisfy architectural constraints, input slices are padded to dimensions divisible by model-specific factors (e.g., multiples of 8 or 16). After prediction, the output is clamped to the range $[0,1]$ and cropped back to the original spatial dimensions.
+
+The predicted slices are then denormalized using the stored minimum and maximum values of the corresponding corrupted input. These normalization parameters are saved during inference to ensure consistent reconstruction.
+
+Along with prediction, computational performance metrics, including model parameters, floating-point operations (FLOPs), and average inference time, are recorded for each model, providing information about efficiency and scalability.
+
+\subsubsection{2D-to-3D Sinogram Aggregation}
+
+
+Since models operate on individual 2D sinograms, a post-processing step is required to reconstruct full 3D volumes.
+
+For each patient, the predicted 2D sinogram slices are aggregated by stacking them along the detector row dimension, restoring the original 3D sinogram structure. 
+
+Metadata, such as normalization parameters, is saved during this process to ensure consistency in the reconstruction stage.
+
+\subsubsection{CT Reconstruction from Predicted Sinograms  }
+
+
+
+The reconstructed three-dimensional sinograms are subsequently converted into CT volumes using cone-beam geometry, implemented using the DiffCT framework \cite{diffct2025}.
+
+Prior to backprojection, the sinograms undergo cosine weighting to account for cone-beam divergence, followed by filtering using a Hann-windowed ramp filter to suppress high-frequency noise and reduce ring artifacts. The Hann window is chosen for its favorable trade-off between spatial resolution and noise suppression.  The filtered projections are then backprojected over all acquisition angles to obtain volumetric reconstructions. 
+
+The reconstruction process incorporates patient-specific metadata, including voxel spacing and volume dimensions, ensuring accurate spatial representation of anatomical structures. 
+Following backprojection, the reconstructed volume is scaled and constrained to non-negative values to ensure physically meaningful attenuation coefficients.
+The reconstructed CT volumes are further normalized and stored for subsequent evaluation and visualization.
+
+
+This reconstruction step is essential, as it allows the performance of the proposed method to be assessed in the clinically relevant image-domain rather than solely in the projection-domain.
+
+\subsection{Image-Domain Inference Pipeline}
+\subsubsection{Dataset Preparation}
+In the image-domain pipeline, the test dataset consists of reconstructed CT volumes obtained from motion-corrupted sinograms \cite{diffct2025}. For each patient in the test set, both artifact-corrupted and corresponding clean reconstructed volumes are available.
+The reconstructed volumes are stored as three-dimensional arrays, where each volume consists of multiple axial slices. During inference, these volumes are loaded and processed sequentially. The input to the model is the artifact-corrupted reconstructed volume, while the clean volume is used as the ground truth for evaluation.
+To ensure consistency with the training process, the same preprocessing steps, including normalization and data formatting, are applied during inference.
+
+\subsubsection{Generation of Corrected 3D CT Volume  }
+In the image-domain pipeline, inference is performed directly on reconstructed CT volumes to generate artifact-corrected outputs. Each motion-corrupted three-dimensional volume is processed in a slice-wise manner by decomposing it into two-dimensional axial slices.
+
+Each slice is independently normalized on a per-sample basis using the intensity statistics of the artifact-corrupted slice to ensure compatibility with the training distribution. The normalized slice is then passed through the trained model to generate a corrected prediction. To accommodate architectural constraints of different models, input slices are padded where necessary, and the predicted outputs are cropped back to their original dimensions. The corresponding clean slice is normalized using the same scaling and clipped to the range [0, 1]. 
+
+The predicted output is first rescaled back to the original intensity range using the inverse transformation. The corrected slices are then aggregated in their original spatial order to reconstruct the full three-dimensional CT volume. This process preserves the volumetric structure of the data while incorporating learned corrections at the slice level.
+
+Unlike the projection-domain pipeline, no additional reconstruction step is required after inference, as the model operates directly on reconstructed image data. The final output is a corrected CT volume with reduced motion artifacts, which is used for quantitative evaluation and qualitative analysis.
+
+During inference, the model efficiency and scalablity are also measured using computational performance metrics,like model parameters, floating-point operations (FLOPs), and average inference time. 
+
+
+
+
+
+
+
+
+\section{Evaluation Strategy}
+
+The performance of all models is evaluated in the reconstructed image-domain by comparing predicted volumes with corresponding ground truth volumes. This unified evaluation strategy is adopted to ensure a fair and clinically meaningful comparison between projection-domain and image-domain approaches.
+
+In the projection-domain pipeline, the model produces corrected sinograms, which are subsequently reconstructed into CT volumes before evaluation. In contrast, in the image-domain pipeline, the model directly outputs corrected reconstructed volumes. Despite these differences, evaluation is consistently performed in the image-domain, as this reflects the final clinically relevant outcome.
+
+During evaluation, both predicted and ground truth volumes are normalized using the intensity range of the clean reference volume to ensure consistent and fair comparison across models. The predicted volume is additionally clipped to the range [0, 1] to ensure numerical stability. Evaluation is performed on a per-slice basis and aggregated across the entire volume.
+
+The following metrics are used:
+\begin{itemize}
+
+\item \textbf{PSNR (Peak Signal-to-Noise Ratio):} Measures pixel-wise reconstruction fidelity.
+
+\item \textbf{SSIM (Structural Similarity Index):} Evaluates structural similarity between images.
+
+\item \textbf{MAE (Mean Absolute Error):} Quantifies absolute intensity differences.
+
+\item \textbf{RMSE (Root Mean Squared Error):} Measures overall reconstruction error.
+
+\item \textbf{VIF (Visual Information Fidelity):} Assesses perceptual information preservation.
+
+\item \textbf{LPIPS (Learned Perceptual Image Patch Similarity):} Evaluates perceptual similarity using deep features.
+
+\end{itemize}
+
+PSNR, SSIM, and VIF are computed on individual axial slices and averaged across all valid slices within each volume, while MAE and RMSE are computed over the entire normalized volume. LPIPS is computed on a subset of slices (every fifth slice) to reduce computational cost.  Slices with negligible signal content are excluded from evaluation to avoid bias in metric computation.
+
+For each model, evaluation metrics are computed across all test patients and reported as mean and standard deviation. 
+
+
+
+
+
+
+
+
+\section{Summary}
+This chapter presents the complete methodology for motion artifact reduction in CT imaging, with a primary focus on evaluating the effectiveness of super-large-kernel convolution through the proposed MR-LKV model. Starting from DICOM data, sinograms are generated using cone-beam forward projection \cite{diffct2025}, followed by the simulation of motion artifacts directly in the projection-domain. To enable supervised learning, the generated 3D data is transformed into two-dimensional representations, allowing efficient training of deep learning models. The proposed MR-LKV architecture, designed with super-large receptive fields, is employed to capture the global spatial dependencies characteristic of motion artifacts, such as long-range streaking and structural distortions.
+
+To comprehensively assess its effectiveness, the model is trained and evaluated in both projection-domain and image-domain settings. In the projection-domain pipeline, the model learns to correct motion-corrupted sinograms prior to reconstruction, while in the image-domain pipeline, it operates directly on reconstructed CT images to suppress visible artifacts.
+
+During inference, predictions are aggregated to reconstruct three-dimensional volumes, which are evaluated in the reconstructed image-domain using quantitative and perceptual metrics. This unified evaluation framework ensures a fair and clinically relevant comparison of model performance.
+
+It should be noted that the motion simulation process is synthetic and may not fully capture the complexity of real patient motion, which represents a limitation of the current study.
+
+ 

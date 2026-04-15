@@ -1,0 +1,455 @@
+\chapter{Results and Discussion}
+\label{chap:results}
+
+\section{Evaluation Overview}
+This chapter presents a comprehensive evaluation of the research conducted in the context of this thesis by applying the described materials and methods of Chapter \ref{chap:methodology}. The primary objective is to assess the effectiveness of super-large-kernel convolution in modeling and suppressing motion-induced artifacts.
+
+
+The proposed model is also compared with other CNN models, large-kernel models and transformer models. All models are trained and evaluated under identical experimental settings to ensure a fair comparison. The evaluation is conducted on a held-out test set consisting of previously unseen patient data, enabling assessment of both reconstruction accuracy and generalization capability. 
+Although projection-domain and image-domain approaches are trained independently, they are intrinsically related through the CT reconstruction process. For clarity, results are presented first in the projection-domain, followed by the image-domain.
+
+
+
+
+
+ 
+
+ 
+\section{Evaluation Metrics}
+
+
+To comprehensively evaluate model performance, a combination of pixel-wise, structural, perceptual, and computational metrics is employed. Pixel-level accuracy is measured using PSNR, RMSE, and MAE, while structural similarity is assessed using SSIM. Perceptual quality is evaluated using LPIPS and VIF, capturing high-level visual consistency beyond pixel-wise agreement.
+
+In addition, computational efficiency is analyzed using model parameters, FLOPs, and  average inference time, providing insights into practical deployment feasibility. 
+These metrics are defined in detail in Chapter \ref{chap:theoretical_background}. 
+
+ 
+
+\section{Preliminary Analysis of MR-LKV }
+This section presents an initial analysis of the proposed MR-LKV model in isolation, focusing on its training behavior, qualitative reconstruction performance, and quantitative metrics in both projection- and image-domains. 
+
+\subsection{Projection-Domain Results}
+\subsubsection{Training Behaviour}
+
+The training and validation loss curves demonstrate stable and consistent convergence throughout the training process. As shown in Fig. \ref{fig:training_loss_curve_projection}, the training loss decreases rapidly during the initial epochs from approximately \textbf{0.030} to below \textbf{0.010}, followed by a gradual reduction, reaching approximately \textbf{0.0055} towards the end of training. This behavior indicates effective optimization and progressive refinement of the model parameters. 
+
+The observed performance improvements can be explained by the fact that motion artifacts arise from inconsistencies in the projection data. By operating directly in the sinograms, the model learns to correct these inconsistencies before they influence the reconstruction outcome.
+\begin{figure}[htpb] 
+    \centering
+    \includegraphics[width=1.0\linewidth]{projection_loss_curve.pdf}
+    \caption{Loss Curves and Validation Metrics in Projection-Domain Training}
+    \label{fig:training_loss_curve_projection}
+\end{figure}
+
+The validation loss exhibits a similar downward trend, decreasing from around \textbf{0.027} and stabilizing near \textbf{0.012–0.013} after approximately 40–50 epochs. While minor fluctuations are observed in the early stages of training, these variations reduce over time, suggesting improved generalization. Although a gap between training and validation loss is present, it remains stable and does not increase, indicating that the model does not suffer from significant overfitting despite its relatively high capacity.
+
+In addition, the validation PSNR shows a steady increase from approximately \textbf{27 dB} to around \textbf{33–34 dB}, reflecting continuous improvement in reconstruction quality. The SSIM values also exhibit a gradual upward trend, stabilizing close to \textbf{0.90}, further confirming the preservation of structural information in the reconstructed outputs.
+
+ 
+
+
+
+
+\subsubsection{Quantitative Performance}
+
+The performance of the MR-LKV model on projection-domain is evaluated using multiple image quality metrics, capturing both pixel-level accuracy and perceptual similarity. The obtained results are summarized as follows:
+
+\begin{itemize}
+    \item \textbf{PSNR}: 37.94 ± 10.20 dB
+    \item \textbf{SSIM}: 0.9024 ± 0.0474
+    \item \textbf{MAE}: 0.01234 ± 0.00781
+    \item \textbf{RMSE}: 0.03097 ± 0.01193
+    \item \textbf{VIF}: 0.3880 ± 0.1279
+    \item \textbf{LPIPS}: 0.1027 ± 0.0515
+\end{itemize}
+
+The high PSNR and SSIM values indicate strong reconstruction fidelity and preservation of structural information. The relatively low MAE and RMSE further confirm accurate pixel-wise restoration. This performance can be attributed to the large receptive field of the MR-LKV architecture, which enables the model to capture long-range dependencies across the sinogram.  
+
+The LPIPS score suggests that perceptual similarity between the reconstructed and ground truth images is well maintained, while the VIF score reflects moderate preservation of visual information content. These results indicate that the model not only minimizes numerical error but also preserves meaningful structural patterns, which is critical for downstream reconstruction quality.  
+
+The relatively high standard deviation in PSNR indicates variability in performance across different slices, likely due to varying degrees of motion corruption.
+
+
+\subsubsection{Computational Performance}
+In addition to reconstruction quality, computational efficiency is an important consideration for practical deployment. 
+The proposed model has approximately \textbf{8.06 million parameters} and requires \textbf{91.24 GFLOPs}, reflecting a moderate computational complexity relative to its performance.
+
+The average inference time is measured to be \textbf{60.21 ms per sample}, indicating that the model is computationally efficient and suitable for near real-time applications, depending on deployment constraints. 
+
+This balance between performance and complexity stems from the design of the MR-LKV architecture, which utilizes depthwise large-kernel convolutions to achieve a wide receptive field without significantly increasing the number of parameters. 
+
+\subsubsection{Qualitative Analysis}
+In the projection-domain, motion corruption introduces visible inconsistencies in the sinogram, appearing as discontinuities and irregular intensity variations across projection views, as shown in Fig. \ref{fig:sinogram_mrlkv}. These disruptions break the smooth sinusoidal patterns representing consistent object geometry, indicating a loss of global coherence in the acquired data.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{sinogram comparison.pdf}
+    \caption{Qualitative comparison of clean, motion-corrupted, and proposed model 3D sinogram for projection-domain. }
+    \label{fig:sinogram_mrlkv}
+\end{figure}
+
+The MR-LKV model effectively reduces these artifacts, producing visibly smoother and more coherent reconstructions. This improvement arises from the model's large receptive field, which enables it to capture globally distributed inconsistencies introduced by motion and promote spatial coherence throughout the image.  
+
+The benefits of these corrections are clearly reflected in the reconstructed CT images as shown in Fig. \ref{fig:mrlkv_qualitative_projection}. 
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{CQ500CT19_mrlkv.png}
+    \caption{MPR-based qualitative comparison of ground truth, motion-corrupted, and MR-LKV restored CT images with ROI zoom. }
+    \label{fig:mrlkv_qualitative_projection}
+\end{figure}
+The MR‑LKV results show noticeable suppression of streaking artifacts, smoother intensity transitions, and enhanced structural continuity across all anatomical planes.
+
+In axial slices, artifact suppression is most apparent along the cranial boundary, where edge definition in the highlighted regions appears sharper and more distinct. In coronal and sagittal views, where motion artifacts often manifest as inter‑slice inconsistencies, the reconstructions exhibit improved anatomical coherence and better preservation of overall structure. The ROI regions further emphasize reduced blurring and superior retention of fine details compared to the corrupted inputs.
+
+Although variations in sinogram patterns may appear subtle, minor inconsistencies in projection space are magnified through the reconstruction process. As a result, even modest improvements in sinogram continuity lead to significant reductions in image‑domain artifacts.
+
+However, some residual blurring and slight loss of sharpness persist near high‑frequency edges, particularly in heavily corrupted regions. This suggests that while MR‑LKV successfully captures global artifact structures, recovering extremely fine details remains challenging.
+
+
+\subsection{Image-Domain Results}
+
+\subsubsection{Training Behaviour}
+
+The training and validation curves of the MR-LKV model in the image-domain show stable and effective learning behavior.   As shown in Fig. \ref{fig:training_loss_curve_image}, the training loss decreases steadily from roughly \textbf{0.045} to \textbf{0.022}, indicating efficient optimization.
+
+
+
+\begin{figure}[htpb]
+        \centering
+        \includegraphics[width=1.0\linewidth]{mr_lkv_training_curves_images.png}
+        \caption{Loss curves and Validation Metrics in Image-Domain Training}
+        \label{fig:training_loss_curve_image}
+    \end{figure}
+
+The validation loss follows a gradual downward trend, stabilizing around 0.051 after approximately 30–40 epochs without any significant increase, indicating the absence of severe overfitting. The persistent gap between training and validation loss remains noticeable but stable, which is expected given the ill-posed nature of image-domain artifact correction, where motion artifacts are closely intertwined with anatomical features.
+
+Compared to the projection-domain, learning in the image-domain poses a greater challenge since motion artifacts appear as complex spatial distortions and blurring rather than structured inconsistencies. Regardless, the validation PSNR increases from about $21.5\,\mathrm{dB}$ to $23.5\,\mathrm{dB}$, and SSIM reaches $0.86$--$0.87$, demonstrating effective reconstruction and good structural preservation. This performance highlights the advantage of MR-LKV's large receptive field, which allows the model to capture globally distributed artifact patterns while maintaining consistency across anatomical structures.
+
+
+
+\subsubsection{Quantitative Performance}
+
+The performance of the MR-LKV model on unseen test data is evaluated using multiple image quality metrics, capturing both pixel-level accuracy and perceptual similarity. The obtained results are summarized as follows:
+
+\begin{itemize}
+    \item \textbf{PSNR}: 29.48 ± 6.99 dB
+    \item \textbf{SSIM}: 0.8904 ± 0.0556
+    \item \textbf{MAE}: 0.03366 ± 0.01202
+    \item \textbf{RMSE}: 0.05843 ± 0.01546
+    \item \textbf{VIF}: 0.3540 ± 0.1250
+    \item \textbf{LPIPS}: 0.1063 ± 0.0568
+\end{itemize}
+
+The PSNR and SSIM values indicate that the model achieves strong reconstruction fidelity  and preserves structural information to a decent extent. The relatively low MAE and RMSE confirm accurate pixel-wise restoration in image-domain. Together, these results highlight the model’s ability to strike a balance between artifact suppression and retention of anatomical structures. 
+
+The LPIPS score reflects that perceptual similarity between the reconstructed and ground truth images is reasonably well maintained, while the VIF score indicates moderate preservation of visual information content.
+
+However, compared to the projection-domain results, the PSNR and SSIM values in the image-domain are relatively lower. This is because image-domain correction operates on already reconstructed images, where motion artifacts have been propagated and spatially distributed during the reconstruction process. That makes it harder to remove the corruptions compared to the projection-domain, where the corruption is more directly represented in the sinogram space.
+
+Despite this difficulty, MR-LKV continues to perform strongly owing to its capacity to capture long-range spatial dependencies. This allows the model to suppress large-scale artifact patterns effectively while preserving global anatomical consistency in the reconstructed images.
+
+ 
+
+\subsubsection{Computational Performance}
+The image-domain variant of the proposed model has approximately \textbf{7.69 million parameters} and requires \textbf{53.51 GFLOPs}, reflecting a computationally efficient design that still delivers a strong reconstruction performance. The average inference time is measured to be \textbf{28.66 ms per sample}, demonstrating improved computational efficiency and potential for near real-time deployment.  The convolutional architecture of MR-LKV facilitates efficient parallel computation, further reducing inference latency.
+
+
+Compared to the projection-domain implementation, the image-domain model exhibits reduced computational overhead and faster inference, underscoring its scalability and practical advantage. This reduction results primarily from the tailored MR-LKV design for image-domain processing, where fewer channels and optimized kernel settings are sufficient to capture spatial dependencies in reconstructed images.
+
+Overall, these results suggest that the image-domain MR-LKV model achieves a favorable trade-off between reconstruction quality and computational cost, making it well-suited for real-world and time-sensitive imaging scenarios.
+
+\subsubsection{Qualitative Analysis}
+
+Random slices (2D image) from all the three orientations- axial, sagittal, and coronal are chosen from a 3D input volume as showing in Fig.\ref{fig:mr_lkv_roi_image}
+with corresponding zoomed-in regions of interest. 
+
+
+\begin{figure}[htpb]
+            \centering
+            \includegraphics[width=1.0\linewidth]{CQ500CT169 CQ500CT169_mpr.png}
+            \caption{MPR-based qualitative comparison of ground truth, motion-corrupted, and MR-LKV restored CT images with ROI zoom in image-domain}
+            \label{fig:mr_lkv_roi_image}
+        \end{figure}
+The motion-corrupted slice images display noticeable motion-induced distortions, including blurring, streaking, and structural discontinuities, particularly visible along high-contrast boundaries such as the skull.
+The MR-LKV reconstructed slice illustrates a clear indication of reduction in these artifacts across all anatomical planes. In the axial view, streaking patterns are effectively suppressed, transitions appear smoother, reflecting improved global consistency. The zoomed-in comparison along the ROIs further reveals improved edge definition and reduced blurring compared to the corrupted input.
+
+In the coronal and sagittal views, where artifacts often appear as inter-slice inconsistencies, the motion-corrupted images reveal prominent distortions and discontinuities. The proposed method produces more coherent and anatomically consistent structures, indicating improved inter-slice continuity. This improvement results from the large receptive field of MR-LKV, enabling effective capture of long-range spatial dependencies and reinforcing structural consistency across slices.
+
+
+Relative to the projection-domain displays, the image-domain reconstruction appears visually more refined, as evidenced by smoother textures and enhanced perceptual quality. This can be attributed to the model operating directly in the image space, where it learns to correct spatially distributed artifacts and optimize perceptual consistency. 
+
+Minor residual blurring and slight sharpness loss are still noticeable along fine structural boundaries, particularly in high-frequency areas. This suggests that while MR-LKV effectively suppresses large-scale artifacts, recovering very fine details remains a challenge even in the image-domain.
+
+Overall, the qualitative analysis demonstrates that the proposed super-large-kernel model balances artifact suppression and structural preservation, producing visually consistent and anatomically plausible reconstructions across multiple views. 
+
+
+
+
+\section{Comparison of Models}
+\subsection{Projection-Domain Comparison}
+\subsubsection{Quantitative Results}
+\begin{table}[H]
+\centering
+\caption{Quantitative comparison of reconstruction quality across different models in the projection-domain}
+\label{tab:model_comparison_projection}
+\renewcommand{\arraystretch}{1.2}
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\rowcolor{gray!20}
+Model & PSNR $\uparrow$ & SSIM $\uparrow$ & VIF $\uparrow$ & RMSE $\downarrow$ & MAE $\downarrow$ & LPIPS $\downarrow$ \\
+\midrule
+U-Net & $34.89 \pm 10.44$ & $0.8664 \pm 0.0606$ & $0.3128 \pm 0.0954$ & $0.03840 \pm 0.01320$ & $0.01612 \pm 0.01031$ & $0.1400 \pm 0.0619$ \\
+SwinIR &  34.40 ± 11.25&  0.8625 ± 0.0754&  0.3898 ± 0.1574&  0.04070 ± 0.01630&  0.01682 ± 0.01181&  0.1139 ± 0.0656\\
+Restormer &  36.97 ± 10.01&  0.8991 ± 0.0456&  0.3725 ± 0.1107&  0.03315 ± 0.01114&  0.01322 ± 0.00806&  0.1101 ± 0.0563\\
+RepLKNet & $35.33 \pm 10.50$ & $0.8786 \pm 0.0525$ & $0.3559 \pm 0.1002$ & $0.03829 \pm 0.01443$ & $0.01642 \pm 0.01111$ & $0.1405 \pm 0.0654$ \\
+\rowcolor{green!10}
+\textbf{MR-LKV (Proposed)} &  37.94 ± 10.20&  0.9024 ± 0.0474&  0.3880 ± 0.1279&   0.03097 ± 0.01193&  0.01234 ± 0.00781&  0.1027 ± 0.0515\\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+Table \ref{tab:model_comparison_projection} presents a comprehensive quantitative comparison of reconstruction quality across all evaluated models. The proposed MR-LKV model consistently achieves the best performance across most evaluation metrics.
+
+In terms of PSNR, MR-LKV achieves the highest value (\textbf{37.94 dB}), indicating improved reconstruction fidelity compared to both conventional CNN-based models and transformer-based approaches. Similarly, MR-LKV attains the highest SSIM (\textbf{0.9024}), confirming improved structural preservation compared to other methods.
+
+Error-based metrics further support these findings. MR-LKV achieves the lowest RMSE (\textbf{0.03097}) and MAE (\textbf{0.01234}), indicating reduced pixel-wise reconstruction error and improved numerical accuracy. These improvements suggest that the super-large-kernel design enables effective modeling of globally distributed inconsistencies introduced by motion artifacts.
+
+In terms of perceptual quality, MR-LKV achieves the lowest LPIPS score (\textbf{0.1027}), reflecting improved perceptual similarity to ground truth images. While SwinIR achieves slightly higher VIF values (\textbf{0.3898}), the overall performance of MR-LKV remains competitive across both perceptual and structural metrics.
+
+It is important to note that transformer-based models such as SwinIR and Restormer are inherently more expressive and may achieve higher performance under larger-scale training or higher computational budgets. However, under the constrained experimental setup considered in this work, MR-LKV demonstrates competitive performance while maintaining significantly lower computational requirements.
+
+
+
+\subsubsection{Computational Efficiency Analysis }
+\begin{table}[H]
+\centering
+\caption{Comparison of model efficiency and computational complexity in the projection-domain. FLOPs are computed as 2 × MACs using ptflops for all models.}
+\label{tab:efficiency_comparison_-projection}
+\begin{tabular}{lccc}
+\toprule
+\rowcolor{gray!20}
+Model & Parameters (M) $\downarrow$ & FLOPs (G) $\downarrow$ & Inference Time (ms) $\downarrow$ \\
+\midrule
+U-Net &  7.76&  177.55&  \textbf{6.09}\\
+SwinIR &  \textbf{1.04}&  860.52&  2514.62\\
+Restormer &  10.66&   756.80&  227.13\\
+RepLKNet &  2.73&  195.29&  193.40\\
+\rowcolor{green!10} 
+\textbf{MR-LKV (Proposed)} &  8.06&  \textbf{91.24}&  60.21\\
+\bottomrule
+\end{tabular}
+\end{table}
+The computational efficiency results summarized in the table \ref{tab:efficiency_comparison_-projection} reveal important trade-offs between model complexity, theoretical cost, and practical runtime performance across the evaluated architectures. 
+
+The proposed MR-LKV achieves the lowest computational cost with \textbf{91.24 GFLOPs}, significantly reducing the number of operations compared to  conventional CNNs, RepLKNet and transformer-based models. This demonstrates that super-large-kernel depthwise convolution can efficiently capture global context without incurring excessive computational overhead.
+
+In terms of runtime, MR-LKV achieves a balanced performance with an inference time of $\textbf{60.21 ms}$, markedly faster than transformer-based counterparts such as SwinIR and Restormer, while maintaining strong reconstruction quality. However, the simple architecture of U-Net makes its average Inference time ($\textbf{ 6.09 ms}$) much lesser than MR-LKV. 
+
+Despite achieving a favorable balance between performance and efficiency, the inclusion of multiple architectural components introduces a higher parameter count ($\textbf{8.06M}$). As a result, the model may not be as lightweight as simpler CNN-based approaches or RepLKNet for highly resource-constrained deployments. 
+
+Overall, these findings demonstrate that MR-LKV strikes a well‑balanced trade-off between accuracy and efficiency, making it a practical and scalable solution for projection-domain motion artifact correction.
+
+
+\subsubsection{Trade off Between Performance and Efficiency}
+
+
+To further analyze the relationship between reconstruction quality and computational cost, additional comparisons are presented through trade-off plots, such as FLOPs versus PSNR and FLOPs versus inference time.
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{projectiontradeoff.pdf}
+    \caption{Trade-off between reconstruction performance and computational efficiency across different models, illustrated using FLOPs versus PSNR and inference time comparisons. }
+    \label{fig:tradeoff_projection}
+\end{figure}
+
+
+As shown in Fig. \ref{fig:tradeoff_projection}, different models reveal distinct trade-offs between performance and efficiency. Transformer-based models such as SwinIR and Restormer achieve high reconstruction quality but at the cost of significantly higher computational complexity and inference time.
+
+ In contrast, conventional CNNs such as U-Net and large-kernel RepLKNet offer lower computational demands but achieve limited performance 
+
+The proposed MR-LKV model achieves an optimal balance in this trade-off space, combining high PSNR with notably lower FLOPs and faster inference compared to transformer-based methods. This indicates that MR-LKV effectively balances reconstruction quality and computational efficiency.
+
+ In summary, these results demonstrate that super-large-kernel convolution enables efficient modeling of global dependencies without incurring the high computational overhead associated with self-attention mechanisms.
+
+
+
+ 
+
+\subsubsection{Qualitative Results}
+Qualitative comparisons in the projection-domain are illustrated in Fig. \ref{fig:sinogram_visual_comparison} and Fig. \ref{fig: cq500ct225}  which display both sinogram reconstructions and their corresponding CT images for all evaluated models.
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{sinogram comparison all.pdf}
+    \caption{Qualitative comparison of clean, motion-corrupted, and model-predicted sinograms across different architectures. }
+    \label{fig:sinogram_visual_comparison}
+\end{figure}
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{CQ500CT225_roi.png}
+    \caption{MPR visualization comparing motion artifact reduction across multiple models, including U-Net, RepLKNet, SwinIR, Restormer, and MR-LKV in projection-domain}
+    \label{fig: cq500ct225}
+\end{figure}
+
+In the projection-domain, motion corruption introduces discontinuities and irregular intensity variations across projection views, disrupting the sinusoidal patterns and overall data consistency. 
+
+ Conventional CNN models such as U-Net reduce local noise but fail to fully restore consistency across projections, leaving noticeable residual discontinuities. RepLKNet improves smoothness yet tends to over‑smooth projection patterns, leading to some loss of structural detail. Transformer-based models such as SwinIR and Restormer capture broader dependencies and produce more coherent sinograms, though they still show incomplete correction in regions with severe corruption.
+
+ In contrast, the proposed MR-LKV model generates properly balanced, structurally consistent sinograms, effectively reducing discontinuities and improving continuity across projection angles. This performance can be credited to its use of super‑large-kernel convolutions, which allow direct modeling of long‑range relationships and enable the network to correct motion‑induced inconsistencies at their origin.
+
+ While visual differences in sinograms may appear subtle, small inconsistencies in projection space can amplify through the reconstruction process. Consequently, even minor improvements in sinogram continuity lead to significant reductions in artifacts within the final CT images.
+
+ This effect is evident in the corresponding CT reconstructions, where MR-LKV demonstrates superior suppression of streaking artifacts, enhanced structural continuity, and more precise preservation of anatomical boundaries compared with all baseline methods. ROI regions show clearer edge definition and reduced blurring, reflecting better recovery of fine details.
+
+However, in severely corrupted regions, faint residual inconsistencies in the sinogram may still propagate into minor artifacts after reconstruction. Despite this, MR-LKV consistently achieves the best balance between artifact suppression and structural preservation among all evaluated methods.
+
+
+ 
+
+ \subsubsection{Limitation}
+Despite its strong performance, the proposed approach has a notable limitation.
+It operates on 2D sinogram representations and does not explicitly exploit inter-slice consistency. Extending the model to 3D representations could further enhance performance. 
+
+\subsection{Image-Domain Comparison}
+
+
+\subsubsection{Quantitative Results}
+
+The quantitative performance of different models in the image-domain setting is summarized in Table \ref{tab:model_comparison_image}. The evaluation is conducted on reconstructed CT volumes using multiple metrics, including PSNR, SSIM, RMSE, MAE, VIF, and LPIPS.
+\begin{table}[H]
+\centering
+\caption{Quantitative comparison of reconstruction quality across different models in the image-domain}
+\label{tab:model_comparison_image}
+\renewcommand{\arraystretch}{1.2}
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\rowcolor{gray!20}
+Model & PSNR (dB) $\uparrow$& SSIM $\uparrow$ & VIF $\uparrow$ & RMSE $\downarrow$ & MAE $\downarrow$ & LPIPS $\downarrow$ \\
+\midrule
+U-Net & 29.14 ± 7.06& 0.9002 ± 0.0510& 0.3668 ± 0.1528& 0.06183 ± 0.01842& 0.03315 ± 0.01303& 0.1059 ± 0.0544\\
+SwinIR &  29.07 ± 7.22&  0.8907 ± 0.0604&  0.3630 ± 0.1250&  0.06268 ± 0.01789&  0.03613 ± 0.01308&  0.1008 ± 0.0576\\
+Restormer &  29.80 ± 6.93&  0.9148 ± 0.0427&  0.3574 ± 0.1458&  0.05828 ± 0.01940&  0.02887 ± 0.01153&  0.0878 ± 0.0447\\
+RepLKNet & 29.11 ± 7.10& 0.9020 ± 0.0440& 0.3222 ± 0.1136& 0.06156 ± 0.01601& 0.03133 ± 0.01038& 0.1090 ± 0.0545\\
+\rowcolor{green!10}
+\textbf{MR-LKV (Proposed)} &  29.48 ± 6.99 &  0.8904 ± 0.0556&  0.3540 ± 0.1250&   0.05843 ± 0.01546&  0.03366 ± 0.01202&  0.1063 ± 0.0568\\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+Among all models, Restormer achieves the highest PSNR (\textbf{29.80 dB}) and SSIM(\textbf{0.9148}), along with the lowest MAE (\textbf{0.02887}) and LPIPS (\textbf{0.0878}), indicating strong reconstruction fidelity and perceptual quality. This can be attributed to its transformer-based architecture, which effectively models global context through self-attention mechanisms.
+
+The proposed MR-LKV model, while not achieving the highest SSIM or LPIPS values, demonstrates competitive performance across multiple metrics, with a PSNR of \textbf{29.48 dB} and RMSE of \textbf{0.05843}, closely approaching the performance of Restormer. This indicates that MR-LKV is able to achieve strong pixel-level reconstruction accuracy despite the increased complexity of image-domain artifact correction. However, its SSIM and LPIPS values are slightly lower compared to the best-performing model, indicating that while overall intensity reconstruction is accurate, the preservation of fine structural details and perceptual similarity remains comparatively limited.
+
+
+The comparatively lower SSIM and perceptual metrics of all the models in the image-domain can be attributed to the inherent differences between projection and image spaces.
+
+Despite these differences, MR-LKV maintains a strong balance between reconstruction accuracy and robustness, achieving competitive performance without the high computational overhead associated with transformer-based approaches.
+
+ 
+
+\subsubsection{Computational Efficiency Analysis}
+
+The computational efficiency of the models is evaluated in terms of parameter count, floating point operations (FLOPs), and average inference time per slice, as shown in Table \ref{tab:efficiency_comparison_image}
+
+\begin{table}[H]
+\centering
+\caption{Comparison of model efficiency and computational complexity in the image-domain. FLOPs are computed as 2 × MACs using ptflops for all models.}
+\label{tab:efficiency_comparison_image}
+\begin{tabular}{lccc}
+\toprule
+\rowcolor{gray!20}
+Model & Parameters (M) $\downarrow$ & FLOPs (G) $\downarrow$ & Inference Time (ms) $\downarrow$ \\
+\midrule
+U-Net &  7.76&  109.63&  \textbf{7.52}\\
+SwinIR &  \textbf{1.04}&  175.34&  236.41\\
+Restormer &  10.66&   456.94&  117.82\\
+RepLKNet &  2.73&  118.69&  105.11\\
+\rowcolor{green!10} 
+\textbf{MR-LKV (Proposed)} &  7.69&  \textbf{53.51}&  28.66\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+MR-LKV demonstrates a favorable efficiency profile, achieving the lowest computational complexity with only \textbf{53.51 GFLOPs}, significantly lower than all other models. In comparison, Restormer requires 456.94 GFLOPs, making it substantially more computationally intensive.
+
+In terms of inference time, U-Net is the fastest (7.52 ms), followed by MR-LKV (\textbf{28.66 ms}), which remains significantly faster than transformer-based architectures such as SwinIR (236.41 ms) and Restormer (117.82 ms) or even another large-kernel CNN model, RepLKNet (105.11 ms).
+
+Despite having a comparable number of parameters to U-Net (\textbf{7.7M}) and higher parameter count than RepLKNet (\textbf{2.73 M}), MR-LKV achieves improved computational efficiency. This can be attributed to its architectural design, where large receptive fields are achieved using depthwise separable convolutions and selectively applied large kernels, rather than repeatedly stacking computationally expensive operations across multiple layers. As a result, MR-LKV is able to capture long-range spatial dependencies efficiently without incurring significant computational overhead.
+
+Compared to the projection-domain configuration, the image-domain model demonstrates lower computational cost and faster inference. This improvement arises from the more spatially structured nature of reconstructed images, enabling efficient artifact correction through fewer operations and a streamlined model design.
+
+
+\subsubsection{Trade-off Between Performance and Efficiency}
+
+As shown in Fig. \ref{fig:tradeoff_image}, the models exhibit clear trade-offs between reconstruction performance and computational efficiency in the image-domain.  
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{psnrtradeoffimage.pdf}
+    \caption{Trade-off between reconstruction performance and computational efficiency across different models, illustrated using FLOPs versus PSNR and inference time comparisons for image-domain}
+    \label{fig:tradeoff_image}
+\end{figure}
+
+The proposed MR-LKV model  has a favorable intermediate position, achieving competitive PSNR while maintaining relatively low computational complexity.  Despite having much fewer FLOPs than transformer-based models, MR-LKV delivers improved reconstruction quality compared to other lightweight baselines such as U-Net or RepLKNet (large-kernel), demonstrating the effectiveness of its super-large-kernel design in capturing global contextual information.
+
+Even in terms of efficiency, MR-LKV maintains a favorable position. While models like SwinIR and Restormer incur higher inference time due to their architectural complexity, MR-LKV achieves significantly faster inference while also giving strong performance. In this regards, U-Net demonstrates the lowest inference time but at the cost of reduced reconstruction accuracy.
+
+Overall, the MR-LKV model provides an effective balance between performance and efficiency, bridging the gap between lightweight CNN-based models and computationally intensive transformer-based approaches in the image-domain.
+
+ 
+
+\subsubsection{Qualitative Results}
+
+Qualitative comparisons of reconstructed CT images by using image-domain trained models are presented in Fig. \ref{fig:qual_comparison_image}.
+The motion-corrupted inputs present pronounced motion-induced distortions, including blurring, streaking, and structural discontinuities, particularly along high-contrast boundaries.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{CQ500CT243 CQ500CT243_mpr.png}
+    \caption{MPR visualization comparing motion artifact reduction across multiple models, including U-Net, RepLKNet, SwinIR, Restormer, and MR-LKV in image-domain}
+    \label{fig:qual_comparison_image}
+\end{figure}
+In the axial view, MR-LKV effectively suppresses motion-induced streaking while maintaining clearer boundaries compared to U-Net and RepLKNet. The zoomed regions show improved edge definition and reduced blurring, indicating better local feature recovery. In contrast, U-Net exhibits residual streaking and blurring, while RepLKNet tends to oversmooth fine details, leading to loss of edge sharpness.
+
+In the coronal and sagittal views, MR-LKV shows a notable improvement in inter-slice consistency, producing more coherent anatomical structures compared to baseline CNN models. This improvement can be attributed to its large receptive field, which enables the model to capture long-range spatial dependencies and enforce structural consistency across slices more effectively than standard convolutional models.
+
+
+However, in comparison to transformer-based models, MR-LKV exhibits slightly less aggressive smoothing of residual artifacts, with faint streaking patterns still visible in some regions. Additionally, in highly corrupted areas, the model may not fully recover fine-grained structures to the same extent as Restormer, which benefits from its higher capacity and global attention mechanisms.
+
+It is also observed that reconstructions in the image-domain appear visually more refined than those obtained in the projection-domain. This can be attributed to the fact that, during reconstruction, motion artifacts become spatially distributed, enabling the model to directly learn and correct these structured distortions within the image space. Consequently, the results exhibit smoother textures and better perceptual quality, even though the underlying correction task remains inherently more complex.
+
+
+
+
+\section{Discussion}
+
+The results across both projection-domain and image-domain settings demonstrate that super-large-kernel convolution provides an effective alternative to both conventional CNNs and transformer-based architectures for CT motion artifact reduction. 
+
+The effectiveness of MR-LKV can be attributed to its super-large-kernel design, which allows direct modeling of long-range dependencies. Unlike conventional CNNs with limited receptive fields, MR-LKV captures global context more effectively, while remaining computationally efficient due to its convolutional structure. Compared to transformer-based models, which rely on self-attention for global modeling, MR-LKV provides a more efficient alternative with significantly lower computational cost.
+
+In the projection-domain, MR-LKV shows strong  quantitative performance by directly addressing inconsistencies at their source in the sinogram space. The inclusion of frequency-enhanced processing and view-axis attention further improves the model’s ability to capture structured distortions across projection views. 
+In the image-domain, although the model operates on already reconstructed data where artifacts have propagated, MR-LKV continues to provide effective artifact suppression through super-large-kernel spatial modeling. While the quantitative performance is slightly lower compared to the projection-domain approach, the image-domain model offers a more computationally efficient, visually corrected and simplified pipeline, making it suitable for scenarios where direct access to projection data is not available.
+
+The comparison with transformer-based models highlights an important trade-off. While transformer architectures achieve strong global modeling through self-attention, they incur significantly higher computational cost. In contrast, MR-LKV achieves competitive performance using convolutional operations with large receptive fields, providing a more efficient alternative for modeling global dependencies in high-resolution medical imaging tasks.
+
+
+Overall, the proposed approach successfully bridges the gap between lightweight CNNs and computationally expensive transformers, providing a balanced trade-off between reconstruction quality and efficiency.
+This validates the central hypothesis of the thesis and demonstrates the practical applicability of super-large-kernel CNNs for motion artifact reduction.
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+ 

@@ -1,0 +1,466 @@
+\chapter{Models}
+\label{chap:models}
+\section{Overview of Considered Models}
+This work investigates the effectiveness of super-large-kernel convolution for motion artifact reduction in CT data. 
+For effective comparison, a combination of convolutional, large-kernel, and transformer-based architectures is considered to evaluate performance across different receptive fields and modeling capabilities.
+
+The models included are:
+
+\begin{itemize}
+    \item Proposed model: \textbf{MR-LKV (Motion Restoration using Large Kernel conVolution)} 
+        \item Baselines: 
+    \begin{itemize}
+        \item U-Net ~\cite{ronneberger2015unet}
+        \item RepLKNet ~\cite{replknet2022}
+        \item SwinIR  ~\cite{liang2021swinir}
+        \item Restormer ~\cite{restormer2022}
+    \end{itemize}
+\end{itemize}
+\subsection{Domain-wise Model Application}
+
+Although identical baseline architectures are used across both domains, the proposed model is modified according to the domain in which the training is employed. 
+The domain-wise model assignments are summarized in Table \ref{tab:domain_comparison}. 
+
+\begin{table}[htpb]
+\centering
+\caption{Comparison of Projection-Domain and Image-Domain Training Setups}
+\small
+\begin{tabular}{|c|c|c|p{6cm}|}
+\hline
+\textbf{Domain} & \textbf{Input} & \textbf{Output} & \textbf{Models} \\ \hline
+
+Projection & 2D sinogram & Clean sinogram & MR-LKV (full), U-Net, RepLKNet, SwinIR, Restormer \\ \hline
+
+Image & CT slices & Clean CT & MR-LKV (simplified), same baselines \\ \hline
+
+\end{tabular}
+\label{tab:domain_comparison}
+\end{table}
+ \section{Proposed Model: MR-LKV}
+ \subsection{Design Motivation}
+Motion artifacts in CT imaging exhibit complex spatial patterns that span large regions and often arise from inconsistencies across projection views. Conventional convolutional neural networks with small kernel sizes struggle to model such global structures efficiently ~\cite{Luo2016}.  Transformers effectively capture long-range dependencies but incur computational costs that limit their practicality in real-time clinical systems \cite{restormer2022}.
+
+To address these limitations, the proposed MR-LKV model is designed with three main objectives:
+
+\begin{itemize}
+    
+    \item Capture \textbf{long-range spatial dependencies} using super-large-kernel convolutions 
+    \item Incorporate \textbf{frequency-domain processing} to correct global inconsistencies 
+    \item Integrate \textbf{attention mechanisms} to emphasize informative spatial and directional features
+
+
+\end{itemize}
+
+The architecture has a flexible framework that can be adapted for both projection-domain and image-domain restoration tasks. 
+\subsection{Architectural Overview}
+
+The proposed MR-LKV architecture is a multi-scale encoder--decoder network designed to capture both global and local dependencies in degraded CT data. The model integrates frequency-domain processing, attention mechanisms, and super-large-kernel convolutional blocks within a unified framework.
+
+The architecture follows a U-Net-like structure ~\cite{ronneberger2015unet} consisting of:
+
+\begin{itemize}
+    \item an initial patch embedding layer,
+    \item four encoder stages with hierarchical feature extraction,
+    \item a symmetrical decoder with skip connections, and
+    \item a final reconstruction layer with residual learning.
+\end{itemize}
+
+The complete architecture is shown in figure \ref{fig:mrlkv_architecture}
+
+Each encoder stage applies a sequential feature refinement pipeline before spatial encoding, ensuring that informative features are emphasized prior to super-large-kernel processing.
+
+\subsubsection{Patch Embedding and Multi-Scale Representation}
+
+Given an input $S \in \mathbb{R}^{1 \times H \times W}$, an initial convolutional embedding layer is applied:
+
+\begin{equation}
+X_0 = \mathrm{Conv}_{3\times3,\, s=2}(S)
+\end{equation}
+
+This operation reduces spatial resolution while increasing the number of feature channels. 
+The network then follows a hierarchical structure with channel dimensions:
+
+\begin{equation}
+C = \{32, 64, 128, 256\}
+\end{equation}
+
+At each stage, spatial resolution decreases while channel capacity increases, enabling the network to capture both fine-grained and global features.
+
+\subsubsection{Encoder Design and Feature Refinement Pipeline}
+
+Each encoder stage consists of a structured sequence of operations:
+
+\begin{equation}
+X \rightarrow \mathrm{FEB} \rightarrow \mathrm{CA} \rightarrow \mathrm{View\text{-}Attn} \rightarrow \mathrm{RLKB}
+\end{equation}
+
+followed by downsampling (except for the final stage).
+
+This sequential design ensures that global contextual information and attention-based feature selection are incorporated prior to spatial modeling.
+
+\subsubsection{Frequency-Enhanced Branch (FEB)}
+
+At each encoder stage, a frequency-enhanced branch (FEB) is applied in the beginning to capture global inconsistencies that are difficult to model using purely spatial operations.
+
+Given an input feature map $X \in \mathbb{R}^{C \times H \times W}$, the FEB first applies a $1 \times 1$ convolution for channel-wise feature transformation:
+
+\begin{equation}
+X' = \mathrm{Conv}_{1\times1}(X)
+\end{equation}
+
+
+This transformation enables channel mixing before frequency-domain processing. The transformed features are then processed using a 2D FFT:
+
+\begin{equation}
+\hat{X} = \mathrm{FFT}_{2\mathrm{D}}(X')
+\end{equation}
+
+Separate $1 \times 1$ convolutions are applied to the real and imaginary components.
+
+
+The transformed features are processed in the frequency domain and mapped back:
+
+
+\begin{equation}
+    Y = \mathrm{IFFT}_{2\mathrm{D}}(f(\hat{X}))
+\end{equation}
+
+A second $1 \times 1$ convolution, Batch Normalization, and residual connection with GELU activation produce:
+
+\begin{equation}
+X_{\mathrm{feb}} =
+\mathrm{GELU}\left(
+\mathrm{Norm}(\mathrm{Conv}_{1\times1}(Y)) + X
+\right)
+\end{equation}
+
+This module enables the network to model structured distortions in the frequency domain.
+
+\subsubsection{Attention Mechanisms}
+
+Two complementary attention mechanisms are applied sequentially.
+
+\paragraph{Channel Attention (CA)}
+Channel attention emphasizes informative feature channels using global context 
+
+\begin{equation}
+X_{\mathrm{ca}} = X \odot w
+\end{equation}
+
+where $w$  is obtained from global average pooling followed by a lightweight two-layer network with reduction ratio $r = 16$.
+
+
+\paragraph{View-Axis Attention}
+
+To model directional dependencies, attention is applied along the width dimension $W$, which corresponds to projection views.
+
+\begin{equation}
+X_{\mathrm{vaa}} = X \odot a
+\end{equation}
+where $a$ is obtained via pooling along the detector axis followed by 1D convolution along the view axis.
+
+The intermediate channel dimension is reduced by a factor of 8.
+
+\subsubsection{Residual Large-Kernel Blocks (RLKB)}
+The RLKB is the core component of MR-LKV, employing progressively increasing kernel sizes to capture long-range dependencies  
+The RLKB performs spatial modeling using large receptive fields.
+
+\begin{equation}
+U = \mathrm{PW}(\mathrm{DW}(X))
+\end{equation}
+
+\begin{equation}
+Y =
+\mathrm{GELU}\left(
+\mathrm{Norm}(U) + X
+\right)
+\end{equation}
+
+where DW denotes depthwise convolution and PW denotes pointwise convolution.
+
+\paragraph{Implementation Details}
+\begin{itemize}
+    \item Kernel sizes: $35, 55, 75, 95$ (stage-wise)
+    \item Channels: $32, 64, 128, 256$
+    \item Depthwise convolution: groups = $C$
+    \item Padding preserves spatial dimensions
+    \item Normalization: BatchNorm2d
+    \item Activation: GELU
+\end{itemize}
+
+\paragraph{Design Rationale}
+
+Large kernels enable direct modeling of long-range dependencies. Depthwise separable design ensures computational efficiency while maintaining large receptive fields.
+
+\subsubsection{Downsampling}
+
+Between encoder stages, downsampling is performed using:
+
+\begin{equation}
+X_{i+1} =
+\mathrm{Conv}_{2\times2,\, s=2}(X_i)
+\end{equation}
+
+This reduces spatial resolution while doubling channel dimensions.
+
+\subsubsection{Decoder}
+
+The decoder reconstructs the output using bilinear upsampling and skip connections.
+
+\begin{equation}
+Y =
+\mathrm{Conv}_{1\times1}\left(
+[\mathcal{U}(X), S]
+\right)
+\end{equation}
+
+where $\mathcal{U}(X)$ is upsampled features and $S$ is the corresponding encoder feature map.
+
+Skip connections preserve spatial detail, and the decoder avoids large-kernel operations to reduce computational cost.
+
+\subsubsection{Output Formulation}
+
+The final output is obtained using residual learning:
+
+\begin{equation}
+\hat{S} = S + f_\theta(S)
+\end{equation}
+
+where $f_\theta$ represents the MR-LKV network.
+
+This formulation allows the model to focus on learning artifact corrections rather than reconstructing the entire signal.
+
+
+The detailed structure of each component is illustrated in Fig. \ref{fig:depth_mrlkv_architecture} 
+
+\subsection{Domain-Specific Adaptation of MR-LKV }
+
+While the MR-LKV architecture is designed as a unified framework for modeling global motion artifacts, its implementation is adapted to suit the characteristics of projection-domain and image-domain data. For the projection-domain, the architecture remains unchanged, whereas for the image-domain, there has been some modifications.
+
+\subsubsection{Removal of Frequency-enhanced Branch}
+    The \textbf{frequency-enhanced branch} is omitted in the image-domain model.
+In reconstructed CT images:
+
+\begin{itemize}
+    \item artifacts appear as spatial distortions rather than structured frequency inconsistencies 
+    \item global frequency-domain modeling provides limited additional benefit 
+\end{itemize}
+Thus, the feature refinement pipeline is simplified by excluding the FEB.
+\subsubsection{Removal of View-Axis Attention}
+The \textbf{view-axis attention} mechanism is also removed in the image-domain configuration.
+
+Unlike sinograms, reconstructed CT images:
+
+\begin{itemize}
+    \item do not contain an explicit directional axis corresponding to projection views 
+    \item exhibit isotropic spatial structure 
+\end{itemize}
+As a result, applying directional attention along a specific axis is not meaningful and may introduce unnecessary bias.
+
+\subsubsection{Retained Components}
+Despite these modifications, the core architectural principles of MR-LKV are preserved.
+
+The image-domain model retains:
+\begin{itemize}
+    \item  Residual Large-Kernel Blocks (RLKB)
+    \item  Channel Attention (CA)
+    \item Encoder--decoder structure with skip connections
+    \item Multi-scale feature representation
+    \item Residual learning at output
+\end{itemize}
+
+
+
+
+The processing pipeline in the image-domain becomes: 
+
+\begin{equation}
+X \rightarrow  \mathrm{CA} \rightarrow \mathrm{RLKB}
+\end{equation}
+This simplified structure focuses on spatial feature modeling while maintaining efficiency.
+
+The full configuration of the MR-LKV architecture is provided in Table \ref{tab:mrlkv_architecture} 
+
+\begin{table}[H]
+\centering
+\caption{Configuration of the proposed MR-LKV architecture}
+\label{tab:mrlkv_architecture}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l c c c p{5.5cm}}
+\toprule
+\rowcolor{gray!15}
+\textbf{Stage} & \textbf{Channels} & \textbf{RLKB Blocks} & \textbf{Kernel Size} & \textbf{Operations} \\
+\midrule
+Patch Embed & 32 & -- & $3 \times 3$ & Stride-2 convolution (downsampling)\\
+Stage 0 & 32 & 2 & $35 \times 35$ & (FEB → CA → View-Attn) + RLKB\\
+Stage 1 & 64 & 2 & $55 \times 55$ & (FEB → CA → View-Attn) + RLKB\\
+Stage 2 & 128 & 3 & $75 \times 75$ & (FEB → CA → View-Attn) + RLKB\\
+\rowcolor{green!10}
+\textbf{Stage 3} & \textbf{256} & \textbf{2} & $\mathbf{95 \times 95}$ & (FEB → CA → View-Attn) + RLKB\\
+\midrule
+Decoder (Stage 2) & 128 & -- & $1 \times 1$ & Bilinear upsampling + skip concatenation + 1×1 convolution\\
+Decoder (Stage 1) & 64 & -- & $1 \times 1$ & Bilinear upsampling + skip concatenation + 1×1 convolution\\
+Decoder (Stage 0) & 32 & -- & $1 \times 1$ & Bilinear upsampling + skip concatenation + 1×1 convolution\\
+Output & 1 & -- & $1 \times 1$ & Final projection + residual addition\\
+\bottomrule
+\end{tabular}
+\end{table}
+ \begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0
+    \linewidth]{MRLKV.drawio.png}
+    \caption{Overall architecture of the proposed MR-LKV network. The encoder consists of multiple stages, each composed of a Frequency Enhancement Branch (FEB), channel attention, view-axis attention, and stacked Residual Large-Kernel Blocks (RLKBs) with progressively increasing kernel sizes to capture long-range dependencies. }
+    \label{fig:mrlkv_architecture}
+
+\end{figure}
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{building blocks.pdf}\caption{Key components of the MR-LKV architecture: frequency enhancement, sequential attention, and residual large-kernel convolution blocks. }
+   
+    \label{fig:depth_mrlkv_architecture}
+\end{figure}
+
+
+
+
+
+
+\subsection{Summary}
+
+The MR-LKV architecture is designed as a flexible framework that can be adapted based on the domain. By removing domain-specific components such as frequency enhancement and view-axis attention, the image-domain model achieves a more efficient and targeted design for spatial artifact correction while retaining the benefits of large-kernel convolutional modeling. 
+
+\section{Baseline Architecture: U-Net}
+
+U-Net is a convolutional encoder--decoder architecture with skip connections, widely used for image restoration tasks ~\cite{ronneberger2015unet}. It is included as a baseline to represent conventional small-kernel CNN approaches for both projection-domain and image-domain artifact correction.
+
+\subsubsection{Architecture}
+A modified implementation of the standard U-Net ~\cite{ronneberger2015unet} is used with additional engineering improvements for stability.
+The network follows a symmetric encoder--decoder structure with four resolution levels. Each encoder stage consists of two convolutional layers with $3 \times 3$ kernels, followed by downsampling using max-pooling. The feature dimensionality grows progressively across the network stages, allowing hierarchical extraction of representations at different levels of abstraction.
+
+
+At the lowest resolution, a bottleneck block further processes the features before passing them to the decoder. The decoder reconstructs spatial details using transposed convolutions, while skip connections are employed to fuse encoder and decoder features, preserving spatial information across scales.
+
+\subsubsection{Implementation Details}
+
+In the conventional U-Net configuration, the base number of feature channels is typically set to 64. However, in this work, the architecture is modified to use a reduced base width:
+
+\begin{itemize}
+    \item Input/output channels: 1
+    \item Base channels: 32 (reduced from standard 64)
+    \item Number of levels: 4
+    \item Convolution kernel size: $3 \times 3$
+    \item Normalization: BatchNorm
+    \item Bottleneck dropout: 0.1
+    \item Weight initialization: Xavier uniform initialization for convolution layers 
+    \item  Skip connection alignment: Center cropping is used to handle spatial mismatches 
+\end{itemize}
+
+The reduction in base channels decreases the overall number of parameters and computational cost, enabling a fair comparison with other models under similar resource constraints.
+
+\subsubsection{Discussion}
+
+Owing to its use of small convolutional kernels, U-Net captures local structures effectively but requires deeper feature hierarchies to model long-range dependencies. This constraint is particularly relevant in image space, where motion artifacts exhibit globally distributed patterns.
+
+\section{Baseline Architecture: RepLKNet}
+
+RepLKNet is a convolutional architecture designed to capture long-range spatial dependencies using large-kernel depthwise convolutions ~\cite{replknet2022}. It is included as a baseline to evaluate the effectiveness of large-kernel CNNs in removing CT artifacts.
+
+\subsubsection{Architecture}
+
+The configuration follows an encoder–decoder architecture, organized into multiple hierarchical stages. Each stage contains several large-kernel convolutional blocks in which depthwise convolutions with expanded receptive fields are followed by pointwise convolutions for inter-channel interaction.  Skip connections are incorporated between corresponding encoder and decoder layers to preserve spatial information. 
+
+To improve training stability, each block integrates a parallel small-kernel depthwise branch that operates alongside the large-kernel convolution, and the two outputs are combined within a residual connection.  Additionally, convolutional feed-forward (ConvFFN) layers are interleaved between RepLK blocks to enhance feature representation.
+
+\subsubsection{Implementation Details}
+
+RepLKNet is adapted for image restoration with an encoder--decoder structure and the following configuration:
+
+\begin{itemize}
+    \item Input/output channels: $1$
+    \item Stage channels: $[32, 64, 128, 256]$
+    \item Number of blocks per stage: $[2, 2, 3, 2]$
+    \item Large kernel sizes: $[21, 19, 17, 9]$
+    \item Small kernel size: $5$
+    \item Normalization: $GroupNorm$ (1 group), enabling stable training for small batch sizes 
+    \item  Feature refinement: ConvFFN blocks alternated with RepLK blocks  
+    \item Residual learning: Applied at both block and stage levels  
+    \item  Multi-scale kernel design: Large and small depthwise convolutions are combined  
+    \item Feature alignment: Bilinear interpolation is used to match feature map sizes during decoding
+\end{itemize}
+
+Compared to the original RepLKNet design ~\cite{replknet2022}, the model is modified in several aspects to make it suitable for image restoration task as compared to classification task which was the intended nature of the original format. 
+
+To ensure compatibility with the hierarchical structure, the input resolution is constrained to be divisible by 4, and inputs are cropped accordingly during training.
+
+\subsubsection{Discussion}
+
+RepLKNet directly models long-range dependencies through large convolutional kernels, making it advantageous for capturing globally distributed motion artifacts. MR-LKV improves upon this by incorporating an increasing super-large-kernel setup, leading to better feature refinement and artifact suppression. 
+
+
+ \section{Baseline Architecture: SwinIR}
+
+SwinIR is a transformer-based framework for image restoration that applies windowed self-attention to learn local dependencies within fixed regions while approximating global context through shifted window interactions across layers ~\cite{liang2021swinir}. It is included as a benchmark to evaluate attention-based approaches for artifact correction.
+\subsubsection{Architecture}
+
+The model consists of stacked Residual Swin Transformer Blocks (RSTBs), where self-attention is computed within local windows and shifted across layers to enable cross-window interaction. Each RSTB contains several Swin Transformer blocks followed by a convolutional layer within a residual connection. 
+
+The overall structure begins with a shallow feature extraction layer, proceeds through deeper transformer-based representation learning, and concludes with a reconstruction module. Residual learning is integrated throughout the design to stabilize optimization and to preserve low-frequency image components.
+
+\subsubsection{Implementation Details}
+
+In this work, SwinIR is configured for CT restoration with the following settings:
+
+\begin{itemize}
+    \item Input/output channels: $1$
+    \item Embedding dimension: $48$
+    \item Number of transformer blocks per RSTB: $[2, 2, 2, 2]$
+    \item Number of attention heads: $[2, 2, 2, 2]$
+    \item Window size: $8$
+    \item Patch size : $128 \times 128$
+    \item Batch size : 2
+    \item Upsampling: $disabled$
+\end{itemize}
+
+Relative to the original SwinIR design ~\cite{liang2021swinir}, both the embedding dimension and depth are reduced to improve computational efficiency for high-resolution inputs. Additionally, checkpointing is enabled during training to reduce memory usage.
+
+To ensure compatibility with the hierarchical structure, the input resolution is constrained to be divisible by 8, and inputs are cropped accordingly during training.
+
+\subsubsection{Discussion}
+
+SwinIR captures both local and global dependencies through window-based attention and shifted window interactions. Nonetheless, the use of self-attention increases computational complexity, compared to convolutional approaches.
+
+
+\section{Baseline Architecture: Restormer}
+
+Restormer is a transformer-based architecture developed for high-resolution image restoration, combining self-attention with convolution-based operations embedded within transformer blocks ~\cite{restormer2022}. It is included as a baseline to evaluate multi-scale attention-based models for artifact correction.
+
+\subsubsection{Architecture}
+
+The framework follows a hierarchical encoder--decoder structure operating across multiple resolution levels. Each level consists of transformer blocks that fuse multi-head self-attention with convolutional feed-forward networks ( \textbf{Gated-DConv Feed-Forward Network)}. 
+A key innovation of Restormer is the \textbf{Multi-DConv Head Transposed Attention (MDTA)} module, where attention computation employs depthwise and pointwise convolutions. This structure enhances local feature extraction while maintaining efficiency. 
+Downsampling and upsampling operations are used to capture multi-scale contextual information, while skip connections are employed to preserve spatial features across stages.
+Unlike standard transformers, Restormer embeds depthwise and pointwise convolutions directly within both the attention and feed-forward modules to improve computational efficiency and local feature representation 
+
+\subsubsection{Implementation Details}
+
+In this work, Restormer is adapted for CT image restoration with the following configuration:
+
+\begin{itemize}
+    \item Input/output channels: 1
+    \item Base feature dimension: 48
+    \item Number of blocks per level: [2, 2, 2, 3]
+    \item Number of attention heads: [1, 2, 4, 8]
+    \item Feed-forward expansion factor: 2.0
+    \item Number of refinement blocks: 2
+    \item Patch Size: $128 \times 128$
+    \item Batch Size: 1
+\end{itemize}
+
+Compared to the original implementation ~\cite{restormer2022}, the model is simplified by reducing the number of blocks per stage and the feed-forward expansion factor to improve computational efficiency. Additionally, the network is adapted for both single-channel sinogram inputs and CT image slice inputs.
+
+To ensure compatibility with the hierarchical structure, the input resolution is constrained to be divisible by 8, and inputs are cropped accordingly during training.
+
+\subsubsection{Discussion}
+
+Restormer captures long-range dependencies through attention mechanisms while leveraging convolutional operations for efficient feature representation. Its multi-scale design enables effective modeling of structured artifacts, but it introduces higher computational and memory requirements compared to convolutional architectures.

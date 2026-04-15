@@ -1,0 +1,88 @@
+\chapter{Introduction}
+
+
+\noindent
+
+Computed tomography (CT) has become a vital tool of modern medical diagnosis due to its ability to provide high-resolution cross-sectional images of internal anatomical structures. It plays a crucial role in emergency diagnostics, neurological assessment, trauma assessment, and treatment planning. In many diagnostic applications, clinicians rely on fine structural details, placing strong requirements on the quality and reliability of reconstructed CT images. Even slight degradations in image quality can negatively affect diagnostic confidence and increase the risk of misinterpretation ~\cite{common_ct_artifacts, kak2001principles}. 
+
+
+Even with major advancements in CT hardware and reconstruction methods, image quality remains susceptible to degradation from a range of acquisition-related artifacts ~\cite{common_ct_artifacts}. Among these, patient motion continues to be one of the most frequent and challenging causes of degradation. Motion may arise from involuntary physiological processes such as breathing and cardiac activity, or from a patient’s inability to remain completely still during the scan ~\cite{boas_ct_artifacts}. Standard CT reconstruction techniques work under the assumption that the object remains still throughout data acquisition, meaning all projection angles capture the same anatomy. When motion occurs, this assumption breaks down and as a consequence, the projections no longer align with a single consistent structure  ~\cite{common_ct_artifacts}. Consequently, the reconstruction task becomes ill-posed, as no single static image can accurately represent the motion-affected data~. These inconsistencies are carried through the reconstruction pipeline, manifesting as visible artifacts such as streaking, blurring, or even repeated structures in the final images ~\cite{boas_ct_artifacts}. Such effects can obscure important anatomical details and compromise diagnostic reliability.
+An example of motion-induced degradation is shown in Fig. \ref{fig:cleanVsArtifacted}, where streaking artifacts and loss of structural detail are clearly visible compared to the clean reconstruction. 
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.5\linewidth]{cleanvsartifactedroi.png}
+    \caption{Visual comparison of clean and motion-corrupted CT reconstructions. Zoomed regions (ROIs) emphasize the loss of fine anatomical details and reduced edge sharpness}
+    \label{fig:cleanVsArtifacted}
+\end{figure}
+
+Conventional motion compensation approaches in CT are commonly formulated as a two-step pipeline consisting of motion estimation followed by motion-compensated reconstruction, often based on optimization strategies and imaging models  ~\cite{thies2025_cbctmotion}. These approaches are effective when motion can be described using simplified or well-constrained models. However, in practice, patient motion can be complex and difficult to estimate accurately, particularly in the presence of irregular or non-rigid motion patterns ~\cite{boas_ct_artifacts}. This limits the robustness of purely model-based correction techniques and can lead to performance degradation under realistic conditions. As a result, such methods tend to be fragile outside controlled settings, which has encouraged the search for data-driven alternatives that can learn complex artifact patterns without explicit motion modeling ~\cite{datadriven23}. 
+
+In recent years, deep learning models have shown remarkably strong results for medical image reconstruction and restoration ~\cite{ahishakiye2021survey, modality_dl_recon}. Rather than depending on hand-crafted correction models, these methods learn intricate relationships between degraded measurements and their corresponding high-quality reconstructions directly from training data. Convolutional neural networks (CNNs) have been particularly successful in image restoration tasks due to their ability to learn hierarchical spatial features and represent intricate degradation patterns that are challenging to describe analytically ~\cite{Goodfellow2016, modality_dl_recon}. These successes have sparked growing interest in applying deep learning techniques to motion artifact reduction in CT imaging. 
+
+However, most existing CNN-based approaches rely on small convolution kernels, such as 3×3 or 5×5, and expand the receptive field primarily by stacking many layers ~\cite{simonyan2015vgg}.  While this design is effective for a wide range of image restoration problems, it may be suboptimal for representing motion artifacts in CT. These artifacts can span large spatial extents and give rise to long-range streaks in the reconstructed slices ~\cite{boas_ct_artifacts}. Modeling such globally distributed structures with only small kernels typically requires very deep networks and intricate multi-scale schemes, which in turn increases computational burden and reduces efficiency.
+
+
+Recent progress in CNN architecture design has renewed the use of large convolutional kernels to capture long-range spatial dependencies ~\cite{replknet2022, Luo2016}. Enlarging the kernel size allows individual layers to access a wider spatial context, which makes it easier to model degradations that are distributed over large regions. At the same time, modern hardware and architectural optimization techniques have made it feasible to implement large-kernel CNNs efficiently ~\cite{replknet2022}. Altogether, these developments suggest that super-large-kernel convolution offers a promising approach for addressing motion artifacts in CT imaging.
+
+
+Transformer-based architectures have recently become popular in image restoration due to their ability to model global context through self-attention mechanisms ~\cite{vaswani2017attention,restormer2022}. While they often achieve strong performance, they typically require substantial computational resources and memory. In contrast, CNNs benefit from highly optimized implementations and broad hardware support. For high‑resolution CT data and potential real‑time clinical use, CNNs with improved long‑range modeling offer a practical and computationally efficient alternative ~\cite{replknet2022}.
+
+
+\section{Research Gap}
+
+The preceding discussion highlights that motion artifacts in CT images are inherently global phenomena, often extending across large spatial regions. Although many CNN-based restoration approaches have shown good performance, they generally employ small convolution kernels and enlarge the receptive field mainly by increasing network depth, which can be inefficient for representing such spatially extended artifacts ~\cite{simonyan2015vgg, Luo2016}. 
+
+While transformer-based models effectively capture global contextual information, their high computational and memory requirements make them less suitable for large-scale CT imaging scenarios ~\cite{restormer2022, liang2021swinir}. This highlights the need for alternative approaches that can capture long-range dependencies while maintaining computational efficiency. 
+Specifically, this thesis addresses this gap by investigating whether super-large-kernel convolutional networks, applied on both the projection domain and image domain, can capture long-range spatial dependencies in CT sinogram data and correct motion-induced inconsistencies before they propagate through the reconstruction process, while maintaining the computational efficiency of convolutional architectures. 
+Fig.\ref{fig:research_gap}  shows the research gap that is being addressed in this thesis.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{research gap.jpg}
+    \caption{Illustration of the research gap in CT artifact correction}
+ 
+    \label{fig:research_gap}
+\end{figure}
+
+\section{Objective}
+
+
+The objective of this thesis is to investigate the effectiveness of super-large-kernel convolutions for reducing motion artifacts in CT imaging by directly modeling long-range spatial dependencies. 
+To this end, this work develops and evaluates a CNN architecture incorporating large convolutional kernels for artifact reduction, assessing its performance against conventional small-kernel approaches.\
+
+The proposed model, referred to as MR-LKV, is designed to capture extended artifact structures while maintaining computational efficiency. Its performance is benchmarked against several baseline architectures, including traditional convolutional networks and transformer-based restoration models.
+\clearpage
+\section{Contributions}
+The main contributions of this thesis are summarized as follows:
+
+• Development of projection-domain and image-domain restoration frameworks for CT motion artifact reduction,  combining forward projection, controlled motion simulation, and deep-learning-based CT image restoration.
+
+• Introduction of MR-LKV, a novel convolutional architecture with super-large-kernel convolutions designed to capture long-range spatial dependencies in CT data.
+
+
+• Incorporation of frequency-enhanced feature integration and view-axis attention mechanisms to improve artifact modeling within projection space.
+
+
+• Comprehensive experimental comparison of the proposed approaches against CNN- and transformer-based restoration models in terms of reconstruction quality and computational efficiency.
+
+\section{Thesis Organization}
+
+The remainder of this thesis is organized as follows.
+
+\textbf{Chapter 2 }reviews the theoretical background, including CT fundamentals, the origin of motion artifacts, and deep learning concepts relevant to image restoration. 
+
+\textbf{Chapter 3} reviews existing approaches for CT image restoration, including image-domain methods, model-based reconstruction techniques, and projection-domain learning strategies. 
+
+\textbf{Chapter 4} explores the novel architecture as well as baseline architectures in detail. 
+
+\textbf{Chapter 5 }describes the proposed methodology, covering data preparation, training strategy, inference strategy, and evaluation method. 
+
+\textbf{Chapter 6} presents the experimental results and comparative evaluation. 
+
+\textbf{Chapter 7} summarizes the thesis and outlines potential directions for future work. 
+
+
+
+
+

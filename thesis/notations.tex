@@ -1,0 +1,67 @@
+
+
+\chapter*{List of Mathematical Notations}
+\addcontentsline{toc}{chapter}{List of Mathematical Notations}
+
+\renewcommand{\arraystretch}{1.3}
+
+\begin{longtable}{ll}
+
+\textbf{Symbol} & \textbf{Description} \\
+\hline
+\endfirsthead
+
+\textbf{Symbol} & \textbf{Description} \\
+\hline
+\endhead
+
+\multicolumn{2}{l}{\textbf{CT Imaging and Physics}} \\
+\hline
+$I$ & Measured X-ray intensity \\
+$I_0$ & Initial X-ray intensity \\
+$\mu(x)$ & Linear attenuation coefficient at position $x$ \\
+$f(x,y)$ & Attenuation distribution in spatial domain \\
+$p(t,\theta)$ & Projection (sinogram) at detector position $t$ and angle $\theta$ \\
+$\theta$ & Projection angle \\
+$t$ & Detector position \\
+
+\multicolumn{2}{l}{\textbf{Reconstruction and Data Representation}} \\
+\hline
+$S$ & Ground truth image or sinogram \\
+$\hat{S}$ & Predicted (reconstructed) image or sinogram \\
+$N$ & Number of pixels or elements \\
+$x, y$ & Spatial coordinates \\
+$A$ & Number of projection angles \\
+$H, W$ & Height and width of image or sinogram \\
+
+\multicolumn{2}{l}{\textbf{Deep Learning and CNN Operations}} \\
+\hline
+$x$ & Input image or feature map \\
+$y$ & Output feature map \\
+$w$ & Convolution kernel \\
+$X$ & Input feature tensor \\
+$Y$ & Output feature tensor \\
+$C$ & Number of channels \\
+$k_l$ & Kernel size at layer $l$ \\
+$s_l$ & Stride at layer $l$ \\
+$R_l$ & Receptive field at layer $l$ \\
+
+\multicolumn{2}{l}{\textbf{MR-LKV Model Components}} \\
+\hline
+$X'$ & Feature map after pointwise ($1 \times 1$) convolution \\
+$U$ & Intermediate feature map after depthwise convolution \\
+$X_{ca}$ & Channel-attended feature representation \\
+$X_{vaa}$ & View-axis attention feature representation \\
+$w$ & Channel attention weights \\
+$a$ & View-axis attention weights \\
+$f_\theta$ & Neural network mapping function with parameters $\theta$ \\
+$\theta$ & Learnable model parameters \\
+
+\multicolumn{2}{l}{\textbf{Frequency Domain Representation}} \\
+\hline
+$\hat{X}$ & Frequency-domain representation of feature map \\
+$\mathcal{F}$ & Fourier transform (FFT) \\
+$\mathcal{F}^{-1}$ & Inverse Fourier transform (IFFT) \\
+
+
+\end{longtable}

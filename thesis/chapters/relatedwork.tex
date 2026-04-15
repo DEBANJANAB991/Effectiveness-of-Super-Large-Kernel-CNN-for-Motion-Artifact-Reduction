@@ -1,0 +1,75 @@
+\chapter{Related Work}
+\label{chap:relatedwork}
+\section{Image-Domain Restoration Methods}
+
+Deep learning methods have been widely applied to CT image restoration, leveraging convolutional neural networks to learn complex mappings between degraded and clean images through hierarchical feature extraction.
+
+Among the earliest CNN-based approaches for CT, Chen et al. \cite{Che+17a} proposed RED-CNN, a residual encoder–decoder network for low-dose CT denoising that demonstrated the effectiveness of combining residual learning with encoder–decoder architectures for medical image restoration. 
+
+More recently, frequency-aware designs have gained attention in image restoration. Chen et al. \cite{LKFN2024} proposed a large-kernel frequency-enhanced network that uses spectral analysis to emphasize high-frequency components corresponding to edges and fine structural details. Hu et al. \cite{hu2025ifsr} introduced an implicit frequency selection mechanism that enables networks to adaptively prioritize informative frequency bands during restoration. 
+
+\section{Projection-Domain Restoration} 
+Projection-domain approaches aim to correct artifacts directly in sinogram space before image reconstruction. Since artifacts originate from inconsistencies in projection measurements, addressing them at this stage can prevent error propagation into reconstructed images.
+
+Existing work in this area has primarily focused on metal artifact reduction. Ghani and Karl \cite{Gha2018} applied a deep learning-based network directly in the sinogram domain, demonstrating that operating on the entire sinogram rather than local patches is essential due to the non-local nature of sinogram information. Podgorsak et al. \cite{Pod2021} applied DCGANs for sinogram-domain correction of sparse and truncated projections, showing that sinogram-domain correction outperformed image-domain correction for sparse acquisitions.
+
+
+
+
+\section{Model-Based and Optimization-Based CT Reconstruction}
+Traditional approaches for artifact reduction in computed tomography rely on model-based and optimization-driven frameworks. These methods define motion correction as an inverse problem, where the goal is to estimate motion parameters and reconstruct images that are consistent with the measured projection data \cite{ritschl2011motion}.
+A common strategy involves a two-step pipeline of motion estimation followed by motion-compensated reconstruction. Hahn et al. \cite{Hah+17}  developed a motion compensation framework for cone-beam CT that estimates rigid motion parameters from the projection data and incorporates them into the backprojection operator. Chee et al. \cite{Che2019} proposed MC-SART, which iteratively refines both the motion model and the reconstructed volume directly from cone-beam projections. More recently, Preuhs et al. \cite{Pre+20} introduced a differentiable approach to motion parameter estimation in flat-panel CT, enabling gradient-based optimization of rigid motion parameters within the reconstruction pipeline. Building on this direction, Thies et al. \cite{thies2025_cbctmotion} developed a fully differentiable imaging model that computes analytical gradients of the reconstruction operator for efficient head motion compensation in cone-beam CT.
+
+While these methods are grounded in physical modeling and provide accurate results, they are typically computationally expensive and depend on accurate motion estimation, which may be difficult to achieve in practical clinical scenarios.
+
+
+\section{Unsupervised and Image-to-Image Translation Methods  }
+
+In many clinical scenarios, paired datasets of artifact-corrupted and clean CT images are difficult to obtain, motivating the development of unsupervised and semi-supervised restoration approaches \cite{zhu2017cyclegan}.  
+
+In the context of CT artifact reduction, Liao et al. \cite{liao2019adn} proposed an artifact disentanglement network that separates artifact components from underlying anatomical structures in a learned latent space, enabling unsupervised metal artifact removal without paired training data.
+
+Although unsupervised methods improve generalization and reduce dependency on synthetic data, they are typically applied in the image domain and may not fully address inconsistencies originating in projection measurements.
+
+
+
+ 
+
+
+\section{Transformer-Based Methods} 
+
+Transformer-based architectures have been introduced to address the limitations of CNNs in modeling long-range dependencies. By employing self-attention mechanisms, transformers can capture global context across the entire image.
+
+For image restoration, several transformer-based models have been developed. Liang et al. \cite{liang2021swinir} proposed SwinIR, which applies window-based self-attention with shifted windows to enable efficient cross-window interaction while maintaining linear computational scaling with respect to image size. Zamir et al. \cite{restormer2022} introduced Restormer, which computes self-attention across channels rather than spatial dimensions, enabling efficient processing of high-resolution images. Wang et al. \cite{Wan+22} proposed Uformer, combining a U-shaped hierarchical structure with window-based self-attention for efficient multi-scale image restoration. 
+
+Despite their strong modeling capabilities, transformer-based architectures incur higher computational complexity and memory consumption compared to convolutional approaches. This limitation motivates the exploration of alternative architectures that can capture long-range dependencies more efficiently.
+
+
+
+\section{Receptive Field Expansion and Large-Kernel CNNs}
+
+A key factor in modeling global dependencies is the size of the receptive field. Traditional CNNs rely on stacking multiple small convolutional kernels to gradually increase the receptive field \cite{Luo2016}. However, this approach is inefficient and may not effectively capture long-range dependencies.
+
+Recent works revisit large-kernel convolution as a more direct approach. Ding et al. \cite{replknet2022} proposed RepLKNet, demonstrating that depthwise convolution kernels as large as 31×31 can be employed efficiently and achieve performance comparable to transformer-based models on various vision tasks. Liu et al. \cite{Liu2022} showed with ConvNeXt that systematically modernizing a standard ResNet with transformer-inspired design choices, including depthwise convolutions with 7×7 kernels, inverted bottlenecks, and layer normalization, enables pure convolutional architectures to match or exceed Swin Transformer performance. Building on this, Liu et al. \cite{Liu2023} proposed SLaK (Sparse Large-Kernel Network), which uses dynamic sparsity and kernel decomposition to scale kernels to 51×51, overcoming the performance saturation observed in RepLKNet beyond 31×31. More recently, Ding et al.  \cite{Din+24} introduced UniRepLKNet, a universal architecture that further scales kernels and demonstrates the effectiveness of large-kernel CNNs across diverse tasks, including image classification, semantic segmentation, and object detection. 
+
+To address the computational challenges associated with large-kernels, several efficient implementations have been proposed. Asymmetric kernel decomposition approximates large square kernels using smaller rectangular convolutions, reducing computational cost while preserving spatial coverage \cite{qu2024alkdnet}. Chen et al. \cite{PeLK2024} proposed parameter-efficient large-kernel convolutions using peripheral convolution, which captures large spatial context with substantially fewer parameters than standard large-kernel depthwise convolutions.
+
+
+These approaches highlight that expanding the receptive field is a fundamental requirement for improving performance in image restoration tasks.
+
+\section{Multi-scale and Hybrid Kernel Designs}
+Recent research has explored combining multiple kernel sizes and feature representations within a unified framework. Multi-scale architectures integrate local, large, and global receptive fields to capture features at different spatial scales \cite{ronneberger2015unet}.
+
+Omni-kernel networks introduce parallel branches that process global, large-scale, and local features simultaneously, enabling the model to handle diverse types of degradations \cite{cui2024oknet}. Additionally, hybrid approaches combine spatial and frequency-domain representations to improve feature extraction and robustness \cite{LKFN2024}.
+
+These designs demonstrate that combining multiple receptive field scales is beneficial for capturing both fine details and global structures in image restoration tasks.
+
+\section{Summary and Research Gap}
+In summary, existing methods for artifact reduction and image restoration can be categorized into image-domain, projection-domain, and model-based approaches. Image-domain methods are effective but limited by their inability to address inconsistencies at the source. Model-based approaches are physically grounded but computationally expensive. Projection-domain methods offer a promising direction but require models capable of capturing global dependencies.
+
+Recent developments, including transformer-based models and large-kernel convolutional networks, have shown strong results in capturing long-range dependencies, which is important for dealing with motion artifacts.  
+
+However, the scope of super-large-kernel convolutional networks for motion-artifact correction remains largely unexplored. Whether such architectures can effectively combine the computational efficiency of convolutional designs with the global modeling capacity required for artifact correction remains an open question. 
+ 
+
+

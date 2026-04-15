@@ -1,0 +1,391 @@
+\chapter{Theoretical Background}
+\label{chap:theoretical_background}
+\section{Computed Tomography (CT) Fundamentals}
+
+Computed tomography (CT) is a medical imaging technique in which X-ray projections are received from multiple angles around the patient and later combined to reconstruct cross-sectional images of the body   ~\cite{kak2001principles}. In modern CT scanners, an X-ray source and detector array rotate around the patient, acquiring projection measurements from multiple angular positions. In practice, this process relies on the interaction of X-ray photons with human tissue during image acquisition. As X-ray beams traverse the body, they are attenuated to different degrees depending on the density and composition of the encountered tissues  ~\cite{kak2001principles}.
+The attenuation of X-ray intensity along a ray path can be described by the Beer–Lambert law:
+
+\begin{equation}
+I = I_{0} \exp\left(- \int_{L} \mu(x)\,dx \right)
+\end{equation}
+
+where $I_0$ is the initial intensity of the ray path $L$, $\mu(x)$  is the linear attenuation coefficient at position $x$, and the integral $\int_{L} \mu(x)\,dx$ represents the cumulative attenuation along that path ~\cite{Buzug}. By acquiring such measurements from many projection angles and applying suitable reconstruction algorithms, the spatial distribution $\mu$ can be estimated to produce tomographic images. These projection measurements represent line integrals of the attenuation distribution along different ray paths through the object. In clinical CT systems, the set of line integrals (projection data) measured along all projection angles and detector positions is often represented as a \textit{sinogram}. 
+Fig.\ref{fig:CT scan machine} shows the standard overview of a CT scanning process.
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{ctscan.jpg}
+    \caption{Overview of a standard CT scanning process from image acquisition to Filtered Back Projection (FBP). Concept adapted from standard CT imaging literature ~\cite{kak2001principles}}
+    \label{fig:CT scan machine}
+\end{figure}
+
+\section{Sinograms and Projection Data Representation}
+
+In computed tomography, the raw measurements acquired by the scanner correspond to projection data obtained from multiple viewing angles around the object. Each projection records how much the X‑rays are attenuated along a bundle of rays that pass through the object and hit a row of detector elements. Each detector element, therefore, measures the total attenuation of X-rays along a specific ray path through the object. If these projections are stacked according to their acquisition angle, they form what is known as a \textit{sinogram} \cite{Buzug}. 
+
+Each row of a sinogram corresponds to a projection acquired at a specific angle, while each column tracks a specific detector element over all angles. As the gantry rotates, a single point in the object traces out a sinusoid-like curve in this 2D representation, which is the reason for the name \textit{sinogram}  \cite{Buzug, kak2001principles}. 
+
+Mathematically, the projection measurements acquired by a CT scanner can be described using the Radon transform~\cite{natterer_ct}. For an object with attenuation distribution $f(x,y)$, the projection measurement at angle $\theta$ and detector position $t$ can be written in the following equivalent form: 
+
+\begin{equation}
+p(t,\theta) = \int f(x,y)\,\delta(x\cos\theta + y\sin\theta - t)\,dx\,dy ,
+\end{equation}
+
+where $p(t,\theta)$ denotes the sinogram value at projection angle $\theta$ and detector position $t$ ~\cite{natterer_ct, kak2001principles}. Reconstruction algorithms such as filtered backprojection aim to recover the attenuation distribution $f(x,y)$ from these projection measurements.
+This mapping is illustrated in Fig.\ref{fig:sinogram_formation_in_CT}
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=0.8
+     \linewidth]{Presentation2.jpg}
+     \caption{Illustration of sinogram formation in CT, where the object $f(x,y)$ is mapped to projection data $p(t,\theta)$ via the Radon transform and reconstructed by backprojection. Adapted from ~\cite{kak2001principles}}
+     \label{fig:sinogram_formation_in_CT}
+ \end{figure}
+Sinograms provide an intermediate representation that is directly related to the acquisition process of CT scanners. Reconstruction algorithms implicitly assume that all projections correspond to a \textbf{single static object configuration} ~\cite{common_ct_artifacts}. If this assumption is violated, for example, due to patient motion during the scan, the sinogram no longer represents a single, consistent object state ~\cite{common_ct_artifacts}. These inconsistencies manifest as distortions or discontinuities in the sinogram and propagate into structured artifacts in the reconstructed image. An example sinogram is shown in Fig. \ref{fig:clean_vs_artifacted_sinogram}. 
+
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=0.95\linewidth]{sinogram.jpg}
+     \caption{Example sinogram obtained from CT projection measurements. Each row corresponds to a projection acquired at a different projection angle, while each column represents a detector position. The sinusoidal patterns correspond to the trajectories of object points across different projection angles. (left): Clean Sinogram; (right): Motion-corrupted Sinogram}
+     \label{fig:clean_vs_artifacted_sinogram}
+ \end{figure}
+
+\section{CT Acquisition Geometry}
+Depending on the configuration of the X-ray source and detector, different geometries are used in practice, including parallel-beam, fan-beam, and cone-beam geometries. 
+
+\subsection{Parallel-Beam Geometry}
+
+In parallel-beam geometry, all X-ray rays are assumed to be parallel to each other as they pass through the object. Each projection represents line integrals taken along parallel paths at different angles \cite{kak2001principles}.  Although parallel-beam geometry is not directly used in modern clinical CT systems, it provides the theoretical foundation for many reconstruction algorithms, including the classical Radon transform and filtered backprojection.
+
+\subsection{Fan-Beam Geometry}
+
+Fan-beam geometry, widely used in conventional clinical CT scanners, uses X-rays that diverge from a point source in a two-dimensional plane and are detected by a one-dimensional detector array \cite{Buzug}. Compared to parallel-beam geometry, fan-beam acquisition is more efficient and better suited for practical systems, although it introduces additional geometric complexity that must be accounted for during reconstruction.
+
+\subsection{Cone-Beam Geometry}
+
+Cone-beam computed tomography (CBCT) uses a divergent cone-shaped X-ray beam and a flat-panel detector to capture volumetric data in one rotational scan \cite{feldkamp1984practical}. Unlike fan-beam CT, which reconstructs sequential slices, CBCT generates a full 3D volume by rotating around the object.
+
+Each CBCT projection is a 2D image, and together they form a 3D dataset spanning multiple viewing angles. This geometry enables efficient volume reconstruction but also increases sensitivity to noise, scatter, and motion.
+
+Reconstruction is commonly done using the Feldkamp–Davis–Kress (FDK) algorithm \cite{feldkamp1984practical}, an extension of filtered backprojection for cone-beam geometry. However, due to the divergent beam and circular trajectory, FDK provides only an approximate reconstruction and is highly affected by projection inconsistencies.
+
+The fundamental differences between CT acquisition geometries, including parallel-beam, fan-beam, and cone-beam configurations, are illustrated in Figure \ref{fig:ct_geometry}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1.0\linewidth, height=0.2\textheight ]{ct_geometry.pdf}
+    \caption{Comparison of CT acquisition geometries.  }
+    \label{fig:ct_geometry}
+\end{figure}
+
+\section{CT Reconstruction Algorithms}
+Once projection measurements are collected, the internal attenuation distribution of the scanned object must be reconstructed from the sinogram data. This reconstruction process aims to recover the spatial distribution of linear attenuation coefficients from projection data. Mathematically, it involves inverting the \textbf{Radon} transform that relates these projections to the object's underlying structure. 
+\subsection{Filtered Back Projection}
+Filtered Back Projection (FBP) is a common reconstruction method in clinical CT systems ~\cite{Buzug}. In simple backprojection, each projection value is distributed back along the corresponding ray paths across the image domain. This alone gives blurred images due to overemphasis on low-frequency components. Hence, FBP applies a high-pass filter to the projections in the frequency domain before backprojecting across all angles, enabling efficient recovery of the attenuation map. Due to its computational efficiency and well-understood behavior, FBP remains widely used in many CT imaging systems.
+
+However, FBP is highly sensitive to inconsistencies in projection data. Even small deviations from the assumption of a static object, such as motion, can lead to significant artifacts in the reconstructed image.
+
+\subsection{Iterative Reconstruction}
+Beyond analytical methods like FBP, modern CT systems often use iterative reconstruction techniques. These methods formulate CT reconstruction as an optimization problem and iteratively refine an estimate of the image by minimizing the difference between measured and simulated projections ~\cite{Buzug}. While offering better noise reduction and artifact handling, iterative methods require substantially more computation than analytical approaches. In the presence of complex or unpredictable motion, their performance may degrade.
+
+\subsection{Feldkamp–Davis–Kress}
+The Feldkamp–Davis–Kress (FDK) \cite{feldkamp1984practical} algorithm extends the filtered backprojection method for cone-beam CT systems, where projections are acquired from a divergent X‑ray source onto a 2D detector. To reconstruct the 3D attenuation map, FDK applies three key steps: geometric weighting to correct beam divergence, frequency-domain filtering of each projection with a ramp filter (optionally windowed to suppress noise), and cone-beam backprojection over all angles. Although only an approximate solution, it remains the standard for circular scanning due to its efficiency. Like conventional backprojection, FDK is prone to artifacts from inconsistent data, including those caused by patient motion. 
+
+
+
+ 
+
+\section{Motion Artifacts in Computed Tomography (CT)}
+
+Although reconstruction algorithms aim to recover the attenuation distribution from projection measurements, they generally assume that the scanned object remains stationary during data acquisition ~\cite{common_ct_artifacts}.  In clinical practice, patient motion can occur due to involuntary movements such as breathing, physiological activity, or the inability to remain completely still during the scan ~\cite{boas_ct_artifacts}. When motion occurs during acquisition, projections measured at different angles no longer correspond to the same object configuration. As a result, inconsistencies arise in the projection data. Since reconstruction algorithms combine all projections under the assumption of a static object, these inconsistencies propagate through the reconstructed images and manifest as visible artifacts such as streaks or blurs  ~\cite{common_ct_artifacts}.  Motion artifacts can conceal important anatomical details and significantly reduce diagnostic reliability. 
+Fig \ref{fig:cleanVsartifactedctimage} shows a brief overview of affect of motion artifact on head CT scan. 
+
+\paragraph{Types of Motion in CT Acquisition}
+
+Motion during CT acquisition can be broadly categorized based on its nature and temporal behavior:
+
+\begin{itemize}
+
+\item \textbf{Rigid motion:}  
+This involves the entire object translating or rotating as a whole, such as head movements \cite{ko2021rigid}. It causes projection misalignment and typically produces structured streak artifacts in the reconstruction.
+
+
+\item \textbf{Non-rigid motion:}  
+This includes deformation of anatomical structures, such as breathing or cardiac motion \cite{ko2021rigid}. This leads to spatially varying inconsistencies that are harder to model and often produce complex blurring and distortion.
+
+\item \textbf{Periodic motion:}  
+Occurs due to physiological processes such as respiration or heartbeat \cite{common_ct_artifacts}. These motions introduce cyclic inconsistencies in projection data, often resulting in ghosting or duplication artifacts.
+
+\item \textbf{Sudden or abrupt motion:}  
+Short-duration movements during acquisition cause localized inconsistencies, leading to severe streak artifacts and discontinuities in the reconstructed image \cite{common_ct_artifacts}.
+
+\end{itemize}
+
+
+
+
+\begin{figure}[htpb]
+    \centering
+
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{CQ500CT19 CQ500CT19_mid.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{CQ500CT19 CQ500CT19_artifact_mid.png}
+        
+    \end{minipage}
+
+    \caption{Illustration of a motion-free axial head CT slice  (left) and the corresponding motion-artifacted axial head CT slice  (right).}
+    \label{fig:cleanVsartifactedctimage}
+\end{figure}
+
+
+\section{Deep Learning for Medical Image Restoration}
+
+Medical image restoration aims to improve image quality by reducing artifacts introduced during acquisition and reconstruction. Classical restoration approaches often rely on analytical models or handcrafted regularization techniques. While these methods can be effective under simplified assumptions, they often struggle to model complex and non-linear degradation patterns observed in real clinical imaging scenarios.
+
+In contrast, deep learning methods learn mappings from corrupted to high-quality images, directly from data, allowing them to capture intricate relationships between measurements, reconstruction artifacts, and underlying anatomy ~\cite{ahishakiye2021survey, yedder2021survey}.  In medical imaging, supervised deep learning frameworks commonly train neural networks on paired degraded inputs and high‑quality reference images, for example, in accelerated MRI and CT reconstruction and denoising ~\cite{modality_dl_recon}.  These approaches leverage large datasets to learn complex spatial patterns associated with different types of image degradation.
+In the context of CT imaging, both image-domain and projection-domain learning approaches have been explored. 
+The general framework is depicted in Fig. \ref{fig:artifacted_to_clean_output}. 
+
+Among deep learning models, convolutional neural networks (CNNs) have become the dominant architecture for image restoration tasks due to their ability to efficiently capture spatial correlations in image data. The following section, therefore, introduces the fundamental principles of CNN architectures used in medical image restoration.
+
+\begin{figure}[H]
+     \centering
+     \includegraphics[width=0.8\linewidth]{deep learning.jpg}
+     \caption{Deep learning-based image restoration framework. A neural network learns a mapping $f_\theta(x)$ from corrupted input images to high-quality restored outputs. }
+     \label{fig:artifacted_to_clean_output}
+ \end{figure}
+
+\section{Convolutional Neural Networks}
+
+Convolutional Neural Networks (CNNs) are deep learning architectures designed for image analysis and object recognition tasks~\cite{sarvamangala2021cnnmed,cnn_medimage_review}.  They use convolutional layers with learnable filters that operate across the spatial dimensions of an image to extract meaningful features while preserving local spatial structure.
+\begin{equation}
+y(i,j) = \sum_{m}\sum_{n} x(i+m, j+n)\, w(m,n)
+\end{equation}
+where ${x}$ is input image, \textbf{$w$} is convolution kernel and $y$ is output feature map \cite{Goodfellow2016}.
+
+By stacking multiple layers, CNNs build a hierarchical representation of the input data. Early layers typically focus on low-level patterns such as edges or textures. As data moves through the network, later layers combine the low-level patterns detected in early layers to form more abstract representations ~\cite{simonyan2015vgg}. 
+
+A generic CNN restoration architecture is shown in Fig. \ref{fig:CNN_architecture} 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth]{cnn image.jpg}
+    \caption{Generic convolutional neural network for image restoration }
+    \label{fig:CNN_architecture}
+\end{figure}
+This progressive abstraction makes CNNs particularly well-suited for medical image restoration tasks, where both fine structural details and broader contextual information are important. 
+
+
+
+
+
+
+\section{Receptive Fields and Kernel Size in CNNs}
+The receptive field of a CNN refers to the spatial region of the input that can influence a particular output activation ~\cite{Luo2016}. The theoretical receptive field (RF) of a unit in a convolutional neural network (CNN) defines the spatial extent of the input that can influence its output value. As layers are stacked, this field grows according to a recursive relationship governed by the kernel size, stride, and dilation of each layer ~\cite{Luo2016}.  As a result, deeper networks are, in principle, able to aggregate information from increasingly larger spatial contexts. For example, for a 1-D sequence of layers with kernel size $k_l$ and stride $s_l$, the receptive field $R_l$ at layer $l$  can be computed recursively as 
+
+                 \begin{equation}
+R_l = R_{l-1} + (k_l - 1)\prod_{i=1}^{l-1} s_i
+\end{equation}
+which illustrates how stacking many layers with small kernels can still lead to large receptive fields. ~\cite{Luo2016}.
+
+Although the theoretical receptive field grows with network depth, the region that actually contributes to a network’s response is often smaller. This region is referred to as the \textit{effective receptive field (ERF)}. Empirical studies have shown that the ERF tends to concentrate near the center of the theoretical receptive field and decreases rapidly toward the boundaries  ~\cite{Luo2016}.  Consequently, networks that depend exclusively on small convolution kernels often need numerous layers to capture large-scale image structures effectively, thereby increasing model depth and computational complexity.
+
+This distinction between theoretical receptive field and effective receptive field is illustrated in Fig. \ref{fig:receptive_field}. 
+
+ 
+ Conventional CNN architectures in image restoration, therefore, often employ small kernels, such as $3\times3$, combined with depth, pooling, or multiscale structures to expand the receptive field ~\cite{simonyan2015vgg}. Such deep stacks increase network depth and computational complexity while still relying on indirect accumulation of contextual information.
+
+ 
+
+ 
+ Motion artifacts in CT images, however, frequently appear as spatially extended patterns, such as streaks and blurring that span large portions of the reconstruction rather than strictly local perturbations~\cite{common_ct_artifacts}. As a result, networks designed for CT motion artifact reduction must access long‑range contextual information to distinguish true anatomical structures from motion‑induced intensity inconsistencies and to correct artifacts that propagate across wide image regions. 
+
+ This limitation becomes particularly critical in CT motion artifact correction, where distortions frequently span large spatial regions. Modeling such global structures using only small kernels is inefficient and often requires deep architectures with increased computational complexity.
+
+This mismatch between local operations and global artifact structure motivates the need for architectures that can directly capture long-range dependencies ~\cite{replknet2022}.
+
+ 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Receptive Field.png}
+    \caption{Conceptual illustration of receptive field expansion. Stacked small convolution kernels gradually increase the receptive field through multiple layers, whereas a single large convolution kernel can directly capture a wider spatial context within one layer. }
+    \label{fig:receptive_field}
+\end{figure}
+
+\section{Super-Large-Kernel Convolution}
+
+    Super-large-kernel convolution uses convolutional filters with substantially larger spatial dimensions than those typically used in standard CNN architectures, such as 3 × 3 or 5 × 5. By increasing the kernel size, a single convolutional layer can directly capture a wide spatial context, allowing explicit modeling of long-range dependencies without using very deep stacks of small-kernel layers. 
+Recent work on large-kernel CNNs has demonstrated that such approaches can be implemented efficiently without prohibitive computational costs~\cite{replknet2022, PeLK2024}. Super-large kernel convolutions provide a direct mechanism for integrating information over the large regions within a single layer or block, potentially reducing the need for very deep small-kernel networks or heavy self-attention modules~\cite{replknet2022}. 
+
+Fig. \ref{fig:super_large_kernels} compares the spatial coverage of small and large kernels. 
+
+One important development is the use of depthwise separable convolutions, in which spatial filtering is performed independently for each channel and followed by pointwise ($1 \times 1$) convolutions for channel mixing. This significantly reduces computational complexity compared to standard convolutions while still allowing the use of very large spatial kernels. Architectures such as RepLKNet ~\cite{replknet2022} have demonstrated that convolution kernels as large as $31 \times 31$  can be employed efficiently and can improve performance on various vision tasks by capturing broader spatial context. 
+
+Combined with modern GPU hardware and efficient implementations, these architectures can be implemented with manageable computational and memory requirements, motivating their use in CT motion artifact reduction tasks where both global contextual awareness and computational efficiency are essential. 
+For CT motion artifact correction, this property offers particular advantages since motion-induced inconsistencies typically span multiple projection views in the sinogram. Similarly, in the image domain, motion artifacts appear as globally distributed streaks and blurring, which also benefit from large receptive field modeling. Large convolution kernels, therefore, provide a natural mechanism for modeling these extended artifact structures. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0
+    \linewidth]{large kernel.jpg}
+    \caption{Comparison between small and large convolution kernels. Small kernels capture limited local context, whereas large kernels significantly increase the receptive field, enabling the network to model global spatial dependencies.}
+    \label{fig:super_large_kernels}
+\end{figure}
+
+\section{ CNN versus Transformers for Image Restoration}
+
+Transformer-based architectures have recently gained prominence in image processing due to their ability to model long-range dependencies through self-attention mechanisms \cite{vaswani2017attention}. In image restoration tasks, transformer models can effectively capture global context, which is beneficial for handling structured image degradations ~\cite{restormer2022}. 
+Despite their strengths, transformer models often incur higher computational complexity and memory consumption compared to convolutional architectures. These factors can pose challenges for deployment in resource-constrained or real-time medical imaging environments. 
+At the same time, recent studies indicate that appropriately designed CNNs, particularly those with enlarged receptive fields, can close much of the performance gap compared to transformer-based models on various image restoration tasks, while saving on computation time~\cite{replknet2022}. Given the high spatial resolution and real-time constraints often present in CT imaging, efficient CNN architectures with strong global modeling capabilities provide a practical and competitive solution for motion artifact reduction.
+
+A summary of these differences is provided in Table \ref{tab:attention_vs_lk} 
+\begin{table}[H]
+\centering
+\caption{Comparison between self-attention and large-kernel depthwise convolution}
+\label{tab:attention_vs_lk}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Property} & \textbf{Self-Attention} & \textbf{Large-Kernel Depthwise Conv} \\
+\midrule
+Complexity per layer & $\mathcal{O}(n^2 d)$ & $\mathcal{O}(n k^2 c)$ \\
+Scaling with resolution & Quadratic & Linear \\
+Receptive field & Global (full input) & Local (kernel size $k$) \\
+Parameter count per layer & $\mathcal{O}(d^2)$ & $\mathcal{O}(k^2 c)$ \\
+Hardware optimization & Moderate & Strong (GPU-optimized) \\
+Memory footprint & High (attention maps) & Low (no attention maps) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Image Quality Metrics and Loss Functions}
+
+The performance of image restoration models is evaluated using a combination of pixel-wise, structural, perceptual, and computational efficiency metrics. This multifaceted evaluation ensures a comprehensive assessment of reconstruction quality and practical applicability.
+
+\subsection{Pixel-wise Metrics}
+
+The\textbf{ L1 loss}, also known as the \textbf{mean absolute error (MAE)}, measures the average absolute difference between predicted and reference values. For a predicted image $\hat{\mathbf{S}}$ and ground-truth image $\mathbf{S}$, the L1 loss is defined as
+
+\begin{equation}
+\mathrm{MAE} 
+= \frac{1}{N} \sum_{i=1}^{N} 
+\left| \hat{S}_i - S_i \right|,
+\end{equation}
+
+where $N$ denotes the number of pixels (or sinogram elements). Unlike  L2 loss, L1 loss is less sensitive to outliers and tends to preserve sharper edges, making it widely used in image restoration tasks. 
+
+
+
+The \textbf{Root Mean Squared Error (RMSE) } is a widely used metric for quantifying reconstruction accuracy by measuring the average magnitude of squared differences between predicted and reference values. It is defined as:
+
+\begin{equation}
+\mathrm{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} \left(\hat{S}_i - S_i\right)^2}
+\end{equation}
+
+where $\hat{S}_i$ and $S_i$ denote the predicted and ground truth values, respectively, and $N$ represents the total number of pixels.
+
+RMSE penalizes larger errors more strongly than the Mean Absolute Error (MAE) due to the squaring operation, making it particularly sensitive to outliers and significant reconstruction deviations. As a result, RMSE provides complementary information to MAE by emphasizing regions with high reconstruction error.
+
+
+
+\textbf{Peak Signal-to-Noise Ratio (PSNR}) is a widely used metric for measuring reconstruction quality. It is derived from the mean squared error (MSE) between a reconstructed image and its reference:
+
+\begin{equation}
+\mathrm{PSNR} = 10 \log_{10} 
+\left( \frac{L^2}{\mathrm{MSE}} \right),
+\end{equation}
+
+where $L$ denotes the maximum possible pixel value and
+
+\begin{equation}
+\mathrm{MSE} = \frac{1}{N} \sum_{i=1}^{N} 
+(\hat{S}_i - S_i)^2.
+\end{equation}
+
+Higher PSNR values indicate better fidelity. Although PSNR does not explicitly model perceptual similarity, it remains a standard metric for quantitative comparison in image restoration studies.
+
+\subsection{Structural and Perceptual Metrics}
+
+
+The \textbf{Structural Similarity Index }(SSIM) is a perceptual metric designed to measure similarity between two images based on luminance, contrast, and structural information. Unlike pixel-wise losses, SSIM evaluates local structural consistency by comparing statistics computed over small neighborhoods.
+
+For two image patches $x$ and $y$, SSIM is defined as
+
+\begin{equation}
+\mathrm{SSIM}(x, y) = 
+\frac{(2\mu_x \mu_y + C_1)(2\sigma_{xy} + C_2)}
+{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)},
+\end{equation}
+
+where $\mu_x$ and $\mu_y$ denote local means, $\sigma_x^2$ and $\sigma_y^2$ denote variances, $\sigma_{xy}$ denotes covariance, and $C_1$, $C_2$ are small constants for numerical stability. SSIM values range between $-1$ and $1$, with higher values indicating greater structural similarity.
+
+SSIM is particularly suitable for medical imaging applications, where preservation of structural information is critical.
+
+\textbf{Visual Information Fidelity (VIF)} is an information-theoretic perceptual metric that quantifies the amount of visual information preserved in the reconstructed image relative to the reference. It is defined as:
+\begin{equation}
+\mathrm{VIF} =
+\frac{\sum_{i} I(C_i; F_i)}
+{\sum_{i} I(C_i; E_i)}
+\end{equation}
+where $I(\cdot;\cdot)$ denotes mutual information, $C_i$ represents the reference image information, $F_i$ the distorted image, and $E_i$ the perceived image through the human visual system model.
+
+\textbf{Learned Perceptual Image Patch Similarity (LPIPS)} is a deep feature-based perceptual metric that measures similarity between images using features extracted from pretrained neural networks. It is computed as:
+\begin{equation}
+\mathrm{LPIPS}(x, y) =
+\sum_{l} \frac{1}{H_l W_l}
+\sum_{h,w} 
+\left( w_l \cdot \left( \phi_l(x)_{h,w} - \phi_l(y)_{h,w} \right) \right)^2
+\end{equation}
+where $\phi_l$ represents deep features from layer $l$, and $w_l$ are learned weights. Lower LPIPS values indicate better perceptual similarity.
+ 
+ 
+
+
+\subsection{Computational Efficiency Metrics}
+
+In addition to reconstruction quality, the efficiency of a model is an important factor, particularly for high-resolution CT data and potential clinical deployment. 
+
+The number of Parameters (\textbf{Params}) is the total count of trainable weights in the network and reflects the model’s memory footprint as well as its representational capacity.
+
+\textbf{Floating Point Operations (FLOPs)} quantify the number of arithmetic operations required to perform a forward pass through the network. FLOPs are computed from multiply–accumulate operations (MACs) obtained using the ptflops library, where each MAC is counted as two floating point operations (one multiplication and one addition). This metric provides an estimate of the computational complexity of the model.
+
+Furthermore, \textbf{Inference time }measures the actual runtime required to process an input sample, typically reported in milliseconds. Unlike FLOPs, inference time reflects real-world performance and depends on both the model architecture and hardware implementation.
+
+
+
+
+In practice, no single metric captures all aspects of image quality. Pixel-wise measures like L1 and PSNR focus on numerical accuracy between restored and reference images, whereas perceptual metrics like SSIM better reflect structural similarities that matter most for clinical image interpretation. For this reason, image restoration studies typically report several complementary metrics together. 
+\begin{quote}
+
+
+\end{quote}
+
+ 
+
+\begin{quote}
+
+
+\end{quote}
+
+\begin{quote}
+
+
+\end{quote}
+
+ 
+
+\begin{quote}
+
+
+\end{quote}
+
+\begin{quote}
+
+
+\end{quote}
+
+ 
+
+
