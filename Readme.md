@@ -154,7 +154,7 @@ The table below provides quick access:
 
 | Task                     | Full Pipeline Instructions | Results |
 |--------------------------|---------------------|---------------------|
-| Image Domain (MR-LKV)    | [Link](src/image_domain/training/Readme.md) | [Download](https://drive.google.com/...) |
+| Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Download](https://drive.google.com/...) |
 | Projection Domain (MR-LKV) | [Link](src/projection_domain/training/train.py)  [Download](https://drive.google.com/...) |
 | 
 ## Results
