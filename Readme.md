@@ -102,6 +102,8 @@ pip install -e .
 
 - **MR-LKV** — Motion Restoration using Super-Large-Kernel conVolution
 
+#### Network Architecture
+
 <p align="center">
   <img src="assets/MRLKV_Architecture.png" width="800">
 
@@ -145,7 +147,16 @@ python3 src/image_domain/inference/run_inference.py
 ```bash
 python3 src/projection_domain/inference/run_inference.py
 ```
+## 🧪 Training and Evaluation
 
+Training and testing instructions are provided in their respective directories.  
+The table below provides quick access:
+
+| Task                     | Full Pipeline Instructions | Results |
+|--------------------------|---------------------|---------------------|---------|
+| Image Domain (MR-LKV)    | [Link](src/image_domain/training/Readme.md) | [Download](https://drive.google.com/...) |
+| Projection Domain (MR-LKV) | [Link](src/projection_domain/training/train.py)  [Download](https://drive.google.com/...) |
+| 
 ## Results
 
 Results are stored in the `results/` directory and include training curves, quantitative evaluation tables, visual comparisons, and ROI analysis.
