@@ -100,7 +100,10 @@ pip install -e .
 
 ### Proposed Model
 
-- **MR-LKV** — Motion Restoration using Large Kernel conVolution
+- **MR-LKV** — Motion Restoration using Super-Large-Kernel conVolution
+
+<p align="center">
+  <img src="assets/MRLKV_Architecture.png" width="800">
 
 ### Baselines
 
