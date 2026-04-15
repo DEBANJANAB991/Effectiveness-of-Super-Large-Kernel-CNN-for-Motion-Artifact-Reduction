@@ -157,7 +157,7 @@ Pretrained model weights are available here.
 
 ### Projection Domain
 
-[Projection-Domain] (https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sharing)
+[Projection-Domain](https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sharing)
 
 
 
