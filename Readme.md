@@ -160,9 +160,52 @@ The table below provides quick access:
 | Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Open](evaluation/qualitative%20analysis/image_domain) |
 | Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md) |  [Open](evaluation/qualitative%20analysis/projection_domain) |
 
-## Detailed Results
+## Quantitative and Computational Results
 
-All the results are stored in the `results/` directory and include training curves, quantitative evaluation tables, visual comparisons, and ROI analysis.
+## Projection Domain Results
+
+### Quantitative Comparison
+
+| Model        | PSNR ↑        | SSIM ↑        | VIF ↑         | RMSE ↓        | MAE ↓         | LPIPS ↓       |
+|-------------|--------------|--------------|--------------|--------------|--------------|--------------|
+| U-Net       | 34.89 ± 10.44 | 0.8664 ± 0.0606 | 0.3128 ± 0.0954 | 0.03840 ± 0.01320 | 0.01612 ± 0.01031 | 0.1400 ± 0.0619 |
+| SwinIR      | 34.40 ± 11.25 | 0.8625 ± 0.0754 | 0.3898 ± 0.1574 | 0.04070 ± 0.01630 | 0.01682 ± 0.01181 | 0.1139 ± 0.0656 |
+| Restormer   | 36.97 ± 10.01 | 0.8991 ± 0.0456 | 0.3725 ± 0.1107 | 0.03315 ± 0.01114 | 0.01322 ± 0.00806 | 0.1101 ± 0.0563 |
+| RepLKNet    | 35.33 ± 10.50 | 0.8786 ± 0.0525 | 0.3559 ± 0.1002 | 0.03829 ± 0.01443 | 0.01642 ± 0.01111 | 0.1405 ± 0.0654 |
+| **MR-LKV (Proposed)** | **37.94 ± 10.20** | **0.9024 ± 0.0474** | 0.3880 ± 0.1279 | **0.03097 ± 0.01193** | **0.01234 ± 0.00781** | **0.1027 ± 0.0515** |
+
+### Model Efficiency
+
+| Model        | Parameters (M) ↓ | FLOPs (G) ↓ | Inference Time (ms) ↓ |
+|-------------|------------------|-------------|-----------------------|
+| U-Net       | 7.76             | 177.55      | **6.09**              |
+| SwinIR      | **1.04**         | 860.52      | 2514.62               |
+| Restormer   | 10.66            | 756.80      | 227.13                |
+| RepLKNet    | 2.73             | 195.29      | 193.40                |
+| **MR-LKV (Proposed)** | 8.06             | **91.24**   | 60.21                |
+
+## 📊 Image Domain Results
+
+### Quantitative Comparison
+
+| Model        | PSNR (dB) ↑     | SSIM ↑        | VIF ↑         | RMSE ↓        | MAE ↓         | LPIPS ↓       |
+|-------------|----------------|--------------|--------------|--------------|--------------|--------------|
+| U-Net       | 29.14 ± 7.06   | 0.9002 ± 0.0510 | 0.3668 ± 0.1528 | 0.06183 ± 0.01842 | 0.03315 ± 0.01303 | 0.1059 ± 0.0544 |
+| SwinIR      | 29.07 ± 7.22   | 0.8907 ± 0.0604 | 0.3630 ± 0.1250 | 0.06268 ± 0.01789 | 0.03613 ± 0.01308 | 0.1008 ± 0.0576 |
+| Restormer   | 29.80 ± 6.93   | 0.9148 ± 0.0427 | 0.3574 ± 0.1458 | 0.05828 ± 0.01940 | 0.02887 ± 0.01153 | 0.0878 ± 0.0447 |
+| RepLKNet    | 29.11 ± 7.10   | 0.9002 ± 0.0440 | 0.3222 ± 0.1136 | 0.06156 ± 0.01601 | 0.03133 ± 0.01038 | 0.1090 ± 0.0545 |
+| **MR-LKV (Proposed)** | 29.48 ± 6.99   | 0.8904 ± 0.0556 | 0.3540 ± 0.1250 | 0.05843 ± 0.01546 | 0.03366 ± 0.01202 | 0.1063 ± 0.0568 |
+
+### Model Efficiency
+
+| Model        | Parameters (M) ↓ | FLOPs (G) ↓ | Inference Time (ms) ↓ |
+|-------------|------------------|-------------|-----------------------|
+| U-Net       | 7.76             | 109.63      | **7.52**              |
+| SwinIR      | **1.04**         | 175.34      | 236.41                |
+| Restormer   | 10.66            | 456.94      | 117.82                |
+| RepLKNet    | 2.73             | 118.69      | 105.11                |
+| **MR-LKV (Proposed)** | 7.69             | **53.51**   | 28.66                |
+
 
 ## Pretrained Models
 
