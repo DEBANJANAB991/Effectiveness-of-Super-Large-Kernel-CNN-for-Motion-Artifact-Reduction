@@ -187,6 +187,14 @@ This project was developed and executed on an HPC environment. As a result, file
 
 1. Update paths in `src/config/config.py` to match your local or cluster environment.
 2. Provide the CT dataset (e.g., CQ500) and preprocessed sinograms, or regenerate them using the provided preprocessing scripts.
+
+  ```bash
+python src/image_domain/preprocessing/dicom_to_sinogram.py
+python src/projection_domain/preprocessing/dicom_to_sinogram.py
+python src/image_domain/preprocessing/add_motion_artifacts.py
+python src/projection_domain/preprocessing/add_motion_artifacts.py
+
+```
 3. Adjust checkpoint paths and output directories as needed.
 
 The codebase is structured for clarity and research reproducibility, but requires environment-specific adaptation to run end-to-end.
