@@ -107,11 +107,13 @@ def run_inference(model_name):
         print_per_layer_stat=False,
         verbose=False
     )
-    flops_gmac = macs / 1e9
-    params_m   = sum(p.numel() for p in model.parameters()) / 1e6
+    flops = 2 * macs  # FLOPs = 2 * MACs for convolutional layers
+    flops_g = flops / 1e9
+    params_m = sum(p.numel() for p in model.parameters()) / 1e6
 
-    print(f"Params : {params_m:.2f} M")
-    print(f"MACs   : {flops_gmac:.2f} G")
+    print(f"Params: {params_m:.2f} M")
+    print(f"MACs   : {flops_g:.2f} G")
+ 
 
    
   
@@ -236,7 +238,7 @@ def run_inference(model_name):
     df = pd.DataFrame(results, columns=["file", "PSNR", "SSIM", "MAE", "RMSE"])
     df["Inference_time_ms"] = avg_time_ms
     df["Params_M"]          = params_m
-    df["MACs_G"]            = flops_gmac
+    df["FLOPS_G"]            = flops_g
 
     csv_path = TABLE_DIR / f"metrics_{model_name}.csv"
     df.to_csv(csv_path, index=False)
