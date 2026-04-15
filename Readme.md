@@ -150,7 +150,7 @@ python3 src/image_domain/inference/run_inference.py
 ```bash
 python3 src/projection_domain/inference/run_inference.py
 ```
-## 🧪 Training and Evaluation
+##  Training and Evaluation
 
 Training and testing instructions are provided in their respective directories.  
 The table below provides quick access:
