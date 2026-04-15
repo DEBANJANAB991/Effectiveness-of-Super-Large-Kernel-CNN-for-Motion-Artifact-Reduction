@@ -153,11 +153,11 @@ Pretrained model weights are available here.
 
 ### Image Domain
 
-https://drive.google.com/drive/folders/1s54Kxz7kzvkK6pQEev2daEGw6yAZX7_X?usp=sharing
+[Image-Domain] https://drive.google.com/drive/folders/1s54Kxz7kzvkK6pQEev2daEGw6yAZX7_X?usp=sharing
 
 ### Projection Domain
 
-https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sharing
+[Projection-Domain] https://drive.google.com/drive/folders/1un4rHg42g8VVwGFvoAxTtyeK8QIHMHTD?usp=sharing
 
 
 
