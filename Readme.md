@@ -159,10 +159,10 @@ The table below provides quick access:
 |--------------------------|---------------------|---------------------|
 | Image Domain (MR-LKV)    | [Link](src/image_domain/Readme.md) | [Open](evaluation/qualitative%20analysis/image_domain) |
 | Projection Domain (MR-LKV) | [Link](src/projection_domain/Readme.md) |  [Open](evaluation/qualitative%20analysis/projection_domain) |
-| 
-## Results
 
-Results are stored in the `results/` directory and include training curves, quantitative evaluation tables, visual comparisons, and ROI analysis.
+## Detailed Results
+
+All the results are stored in the `results/` directory and include training curves, quantitative evaluation tables, visual comparisons, and ROI analysis.
 
 ## Pretrained Models
 
