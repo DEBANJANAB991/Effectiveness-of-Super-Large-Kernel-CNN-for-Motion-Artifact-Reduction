@@ -234,7 +234,7 @@ The table below provides quick access:
 
 ###  Key Observations
 
-- MR-LKV achieves the best overall performance in the projection domain.
+- MR-LKV achieves a trade-off in reconstruction quality and computational complexity.
 - It provides improved PSNR and SSIM while reducing RMSE and MAE.
 - MR-LKV demonstrates significantly lower FLOPs compared to transformer-based models.
 
