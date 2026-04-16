@@ -68,9 +68,17 @@ pip install -e .
 ## Dataset
 
 - **Dataset:** [CQ500 CT dataset](http://headctstudy.qure.ai/dataset)
-- **Preprocessing includes:** DICOM loading, conversion to sinograms, and synthetic motion artifact generation
+- **Preprocessing includes:** DICOM loading, conversion to sinograms, and synthetic motion artifact generation.
 
 > **Note:** The dataset is not included in this repository due to size and privacy constraints.
+
+## Input and Output
+
+- Input:
+  - DICOM CT scans or sinograms with motion artifacts
+
+- Output:
+  - Artifact-reduced CT images
 
 ## Pipeline Overview
 
@@ -126,6 +134,19 @@ pip install -e .
 
 This project includes a locally modified version of [DiffCT](https://github.com/sypsyp97/diffct), adapted for pipeline integration, custom preprocessing, and projection handling.
 
+## Training Details
+
+- Loss function: (e.g., L1 / MSE)
+- Optimizer: Adam
+- Learning rate: 1e-4 (varies per model)
+- Hardware: HPC GPU environment
+
+## Evaluation Metrics
+
+- PSNR: Measures reconstruction fidelity
+- SSIM: Measures structural similarity
+- RMSE / MAE: Pixel-wise error
+- LPIPS: Perceptual similarity
 ## Usage
 
 ### Image Domain Training
