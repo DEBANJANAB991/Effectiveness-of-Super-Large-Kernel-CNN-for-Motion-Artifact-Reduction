@@ -1,5 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.10-blue)
 ![PyTorch](https://img.shields.io/badge/framework-PyTorch-red)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 # Motion Artifact Reduction in CT using Super-Large Kernel CNNs (MR-LKV)
 
