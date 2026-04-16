@@ -12,6 +12,7 @@ This module performs motion artifact reduction directly on reconstructed CT imag
   - Motion artifact simulation
   ```bash
   python3 image_domain/preprocessing/add_motion_artifacts.py
+  
   ```
   - Image Reconstruction to 3D volume
   ```bash
@@ -31,7 +32,7 @@ This module performs motion artifact reduction directly on reconstructed CT imag
   python3 image_domain/evaluation/final_evaluation.py --model mr_lkv --clean-folder clean
   ```
 - `Visualisation and Plots`
- - Visualisation of Predicted Volume Slices
+  - Visualisation of Predicted Volume Slices
   ```bash
  python3 image_domain/visualisation/visualise_ct.py
  python3 image_domain/visualisation/visualise_ct_mrlkv.py

@@ -29,7 +29,7 @@ This module performs motion artifact reduction in sinogram (projection) space.
   python3 projection_domain/evaluation/final_evaluation.py --model mr_lkv --clean-folder clean
   ```
 - `Visualisation and Plots`
- - Visualisation of Predicted Volume Slices
+  - Visualisation of Predicted Volume Slices
 ```bash
 python3 projection_domain/visualisation/visualise_ct.py
 python3 projection_domain/visualisation/visualise_mrlkv.py
