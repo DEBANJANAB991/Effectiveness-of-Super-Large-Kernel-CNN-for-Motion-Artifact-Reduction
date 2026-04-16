@@ -30,11 +30,16 @@ This project proposes a deep learning framework based on **super-large kernel co
 │       ├── SwinIR/                # Submodule
 │       └── diffct/                # Locally modified version
 ├── checkpoints/                   # Model weights (.pth)
-├── evaluation/                       # Plots, logs, reconstructions
+├── evaluation/                    # Plots, logs, reconstructions
+├── assets/                        # architecture diagrams
+├── thesis/                        # contains the main thesis file and .tex files
 ├── job.sh                         # HPC job script
 ├── setup.py
 ├── requirements.txt
 └── README.md
+├── __init__.py
+├──.gitignore
+├──.gitmodules
 ```
 
 ## Installation
