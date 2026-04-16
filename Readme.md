@@ -232,6 +232,12 @@ The table below provides quick access:
 | RepLKNet    | 2.73             | 118.69      | 105.11                |
 | **MR-LKV (Proposed)** | **7.69**             | **53.51**   | **28.66**                |
 
+###  Key Observations
+
+- MR-LKV achieves the best overall performance in the projection domain.
+- It provides improved PSNR and SSIM while reducing RMSE and MAE.
+- MR-LKV demonstrates significantly lower FLOPs compared to transformer-based models.
+
 
 ## Pretrained Models
 
@@ -289,7 +295,12 @@ The codebase is structured for clarity and research reproducibility, but require
 - Compared projection-domain vs. image-domain learning strategies
 - Built a reproducible end-to-end CT artifact reduction pipeline
 
+## Thesis
 
+<p align="center">
+  <a href="thesis/output/thesis.pdf">
+  </a>
+</p>
 
 ## Author
 
