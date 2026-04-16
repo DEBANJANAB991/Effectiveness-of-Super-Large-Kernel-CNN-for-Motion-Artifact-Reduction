@@ -8,7 +8,7 @@ This directory contains the complete implementation of the motion artifact reduc
 - `models/` – Deep learning models (MR-LKV, U-Net, RepLKNet)
 - `image_domain/` – Image-domain pipeline
 - `projection_domain/` – Projection-domain pipeline
-- `ExternalRepo/` – External model implementations
+- `ExternalRepo/` – External model implementations (diffct, SwinIR, Restormer)
 
 ## Notes
 
