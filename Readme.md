@@ -259,19 +259,11 @@ The codebase is structured for clarity and research reproducibility, but require
 ## Key Contributions
 
 - Introduced MR-LKV for global artifact modeling using super-large kernel convolutions
-- Demonstrated effectiveness of large-kernel CNNs for CT artifact reduction
+- Demonstrated effectiveness of super-large-kernel CNNs for CT artifact reduction
 - Compared projection-domain vs. image-domain learning strategies
 - Built a reproducible end-to-end CT artifact reduction pipeline
 
-## Citation
 
-```bibtex
-@mastersthesis{bhattacharjya2026,
-  title   = {Motion Artifact Reduction in CT using Super-Large Kernel CNNs},
-  author  = {Debanjona Bhattacharjya},
-  year    = {2026}
-}
-```
 
 ## Author
 
