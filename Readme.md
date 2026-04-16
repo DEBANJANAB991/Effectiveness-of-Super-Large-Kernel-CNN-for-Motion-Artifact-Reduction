@@ -298,10 +298,7 @@ The codebase is structured for clarity and research reproducibility, but require
 
 ## Thesis
 
-<p align="center">
-  <a href="thesis/output/thesis.pdf">
-  </a>
-</p>
+ [Link](thesis/output/thesis.pdf)
 
 ## Author
 
